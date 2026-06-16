@@ -1,4 +1,4 @@
-package kr.co.prac.dto;
+package kr.co.prac.dto.member;
 
 import kr.co.prac.entity.Member;
 import lombok.Getter;

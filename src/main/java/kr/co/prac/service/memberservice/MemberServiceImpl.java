@@ -1,10 +1,13 @@
 package kr.co.prac.service.memberservice;
 
 import java.util.List;
-import org.springframework.stereotype.Service;
 
-import kr.co.prac.dto.MemberCreateRequest;
-import kr.co.prac.dto.MemberResponse;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import kr.co.prac.dto.member.MemberCreateRequest;
+import kr.co.prac.dto.member.MemberResponse;
+import kr.co.prac.dto.member.MemberUpdateRequest;
 import kr.co.prac.entity.Member;
 import kr.co.prac.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +44,23 @@ public class MemberServiceImpl implements MemberService{
 
 	@Override
 	public void delete(Long id) {
-		memberRepository.delete(id);
+		Member member = memberRepository.findById(id).orElseThrow(()-> new IllegalArgumentException("X"));
+		memberRepository.delete(member);
 		
+	}
+	
+	@Transactional
+	@Override
+	public MemberResponse update(Long id, MemberUpdateRequest memberUpdateRequest) {
+		Member member = memberRepository.findById(id).orElseThrow(()-> new IllegalArgumentException("X"));
+		if(memberUpdateRequest.getName() != null) {
+			member.setName(memberUpdateRequest.getName());			
+		}
+		if(memberUpdateRequest.getEmail() != null) {
+			member.setEmail(memberUpdateRequest.getEmail());			
+		}
+//		memberRepository.save(member); ??
+		return new MemberResponse(member);
 	}
 	
 	
