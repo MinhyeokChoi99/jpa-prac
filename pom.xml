@@ -83,6 +83,14 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+			
+		<!--test memory h2db-->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+			</dependency>
+		</dependency>
 		
 		<dependency>
 		    <groupId>org.springdoc</groupId>
