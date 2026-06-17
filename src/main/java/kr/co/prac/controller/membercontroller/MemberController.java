@@ -24,7 +24,6 @@ public class MemberController {
 
 
 	private final MemberService memberServiceImpl;
-
 	
 	@PostMapping("/member/apply") 
 	public MemberResponse apply(@RequestBody MemberCreateRequest mr) {

@@ -53,10 +53,10 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	public MemberResponse update(Long id, MemberUpdateRequest memberUpdateRequest) {
 		Member member = memberRepository.findById(id).orElseThrow(()-> new IllegalArgumentException("X"));
-		if(memberUpdateRequest.getName() != null) {
+		if(memberUpdateRequest.getName() != null && memberUpdateRequest.getName() != "") {
 			member.setName(memberUpdateRequest.getName());			
 		}
-		if(memberUpdateRequest.getEmail() != null) {
+		if(memberUpdateRequest.getEmail() != null && memberUpdateRequest.getName() !="") {
 			member.setEmail(memberUpdateRequest.getEmail());			
 		}
 //		memberRepository.save(member); ??
