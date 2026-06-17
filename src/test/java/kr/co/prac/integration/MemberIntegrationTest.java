@@ -1,4 +1,4 @@
-package kr.co.prac.intergration;
+package kr.co.prac.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -99,7 +99,7 @@ public class MemberIntegrationTest {
 		
 		memberServiceImpl.delete(apply.getNumber());
 		
-		assertThat(memberRepository.count()).isEqualTo(0);
+		assertThrows(IllegalArgumentException.class, () -> memberServiceImpl.find(apply.getNumber()));
 		
 	}
 	

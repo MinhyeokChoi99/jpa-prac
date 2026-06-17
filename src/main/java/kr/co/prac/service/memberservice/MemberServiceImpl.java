@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MemberServiceImpl implements MemberService{
 
 	private final MemberRepository memberRepository;
@@ -31,12 +32,14 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public MemberResponse find(Long id) {
 		Member findMember = memberRepository.findById(id).orElseThrow( () -> new IllegalArgumentException("X"));
 		return new MemberResponse(findMember);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Member> findAll() {
 		List<Member> members = memberRepository.findAll();
 		return members;
@@ -49,17 +52,15 @@ public class MemberServiceImpl implements MemberService{
 		
 	}
 	
-	@Transactional
 	@Override
 	public MemberResponse update(Long id, MemberUpdateRequest memberUpdateRequest) {
 		Member member = memberRepository.findById(id).orElseThrow(()-> new IllegalArgumentException("X"));
-		if(memberUpdateRequest.getName() != null && memberUpdateRequest.getName() != "") {
+		if(memberUpdateRequest.getName() != null && !memberUpdateRequest.getName().equals("")) {
 			member.setName(memberUpdateRequest.getName());			
 		}
-		if(memberUpdateRequest.getEmail() != null && memberUpdateRequest.getName() !="") {
+		if(memberUpdateRequest.getEmail() != null && !memberUpdateRequest.getEmail().equals("")) {
 			member.setEmail(memberUpdateRequest.getEmail());			
-		}
-//		memberRepository.save(member); ??
+		}	
 		return new MemberResponse(member);
 	}
 	

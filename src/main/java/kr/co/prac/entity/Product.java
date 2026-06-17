@@ -19,4 +19,15 @@ public class Product {
 	private int price;
 	
 	private int stock;
+	
+	public void addStock(int quantity) {
+		this.stock += quantity;
+	}
+	
+	public void removeStock(int quantity) {
+		if(this.stock - quantity < 0) {
+			throw new IllegalArgumentException("0미만 불가");
+		}
+		this.stock -= quantity;
+	}
 }
