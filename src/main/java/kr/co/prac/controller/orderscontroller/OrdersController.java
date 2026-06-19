@@ -32,13 +32,6 @@ public class OrdersController {
 		return orderServiceImpl.findOne(orderId);
 	}
 	
-	// 맴버기준조회
-		@GetMapping("/orders/{memberId}/orders")
-		public List<OrdersResponse> orderByMemberId(@PathVariable Long memberId) {
-			List<OrdersResponse> memberIdFound = orderServiceImpl.memberIdFound(memberId);
-			return memberIdFound;
-		}
-	
 	// 생성
 	@PostMapping("/orders")
 	public OrdersResponse createOrder(@RequestBody @Valid List<OrderCreateRequest> orderCreateRequest) {
