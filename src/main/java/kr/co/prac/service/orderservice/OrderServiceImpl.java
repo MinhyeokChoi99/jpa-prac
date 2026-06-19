@@ -31,24 +31,29 @@ public class OrderServiceImpl implements OrderService{
 	private final ProductRepository productRepository;
 
 	
-	@Override // 주문생성
-	public OrdersResponse createOrder(OrderCreateRequest orderCreateRequest) {
+	@Override // 주문생성 -> 여러건 처리할수있게 수정
+	public OrdersResponse createOrder(List<OrderCreateRequest> orderCreateRequests) {
+		// 빈리스트로 요청이 들어왔을 경우 검증
+		if(orderCreateRequests == null || orderCreateRequests.isEmpty()) {
+			throw new IllegalArgumentException("상품X");
+		}
 		Orders order = new Orders();
-		order.setMember(memberRepository.findById(orderCreateRequest.getMemberId()).orElseThrow( () -> new IllegalArgumentException("존재하지않는 회원")));
+		order.setMember(memberRepository.findById(orderCreateRequests.get(0).getMemberId()).orElseThrow( () -> new IllegalArgumentException("존재하지않는 회원")));
 		order.setOrderDate(LocalDateTime.now());
 		order.setStatus(Status.READY);
 		Orders savedOrder = ordersRepository.save(order);
 		
-		Product product = productRepository.findById(orderCreateRequest.getProductNumber()).orElseThrow(()-> new IllegalArgumentException("존재하지않는 제품"));
-		product.removeStock(orderCreateRequest.getCount());
-		
-		OrderItem orderItem = new OrderItem();
-		orderItem.setCount(orderCreateRequest.getCount());
-		orderItem.setOrders(savedOrder);
-		orderItem.setProduct(product);
-		orderItem.setOrderPrice(product.getPrice() * orderCreateRequest.getCount());
-		orderItemRepository.save(orderItem);
-		
+		for(OrderCreateRequest orderCreateRequest : orderCreateRequests) {
+			Product product = productRepository.findById(orderCreateRequest.getProductNumber()).orElseThrow(()-> new IllegalArgumentException("존재하지않는 제품"));
+			product.removeStock(orderCreateRequest.getCount());
+			
+			OrderItem orderItem = new OrderItem();
+			orderItem.setCount(orderCreateRequest.getCount());
+			orderItem.setOrders(savedOrder);
+			orderItem.setProduct(product);
+			orderItem.setOrderPrice(product.getPrice() * orderCreateRequest.getCount());
+			orderItemRepository.save(orderItem);
+		}
 		
 		return new OrdersResponse(savedOrder);
 	}

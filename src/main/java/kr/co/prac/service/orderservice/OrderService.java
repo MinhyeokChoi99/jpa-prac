@@ -8,7 +8,7 @@ import kr.co.prac.entity.Orders;
 
 public interface OrderService {
 	
-	OrdersResponse createOrder(OrderCreateRequest orderCreateRequest);
+	OrdersResponse createOrder(List<OrderCreateRequest> orderCreateRequests);
 	
 	OrdersResponse findOne(Long orderId);
 	

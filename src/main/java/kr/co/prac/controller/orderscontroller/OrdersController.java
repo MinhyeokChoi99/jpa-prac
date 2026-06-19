@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import kr.co.prac.dto.OrderCreateRequest;
 import kr.co.prac.dto.OrdersResponse;
 import kr.co.prac.service.orderservice.OrderService;
@@ -40,7 +41,7 @@ public class OrdersController {
 	
 	// 생성
 	@PostMapping("/orders")
-	public OrdersResponse createOrder(@RequestBody OrderCreateRequest orderCreateRequest) {
+	public OrdersResponse createOrder(@RequestBody @Valid List<OrderCreateRequest> orderCreateRequest) {
 		return orderServiceImpl.createOrder(orderCreateRequest);
 	}
 	// 삭제
