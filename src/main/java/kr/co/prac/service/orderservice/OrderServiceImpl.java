@@ -1,5 +1,103 @@
 package kr.co.prac.service.orderservice;
 
-public class OrderServiceImpl {
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import kr.co.prac.dto.OrderCreateRequest;
+import kr.co.prac.dto.OrdersResponse;
+import kr.co.prac.entity.OrderItem;
+import kr.co.prac.entity.Orders;
+import kr.co.prac.entity.Product;
+import kr.co.prac.entity.Status;
+import kr.co.prac.repository.MemberRepository;
+import kr.co.prac.repository.OrderItemRepository;
+import kr.co.prac.repository.OrdersRepository;
+import kr.co.prac.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class OrderServiceImpl implements OrderService{
+
+	private final OrdersRepository ordersRepository;
+	private final MemberRepository memberRepository;
+	private final OrderItemRepository orderItemRepository;
+	private final ProductRepository productRepository;
+
+	
+	@Override // 주문생성
+	public OrdersResponse createOrder(OrderCreateRequest orderCreateRequest) {
+		Orders order = new Orders();
+		order.setMember(memberRepository.findById(orderCreateRequest.getMemberId()).orElseThrow( () -> new IllegalArgumentException("존재하지않는 회원")));
+		order.setOrderDate(LocalDateTime.now());
+		order.setStatus(Status.READY);
+		Orders savedOrder = ordersRepository.save(order);
+		
+		Product product = productRepository.findById(orderCreateRequest.getProductNumber()).orElseThrow(()-> new IllegalArgumentException("존재하지않는 제품"));
+		product.removeStock(orderCreateRequest.getCount());
+		
+		OrderItem orderItem = new OrderItem();
+		orderItem.setCount(orderCreateRequest.getCount());
+		orderItem.setOrders(savedOrder);
+		orderItem.setProduct(product);
+		orderItem.setOrderPrice(product.getPrice() * orderCreateRequest.getCount());
+		orderItemRepository.save(orderItem);
+		
+		
+		return new OrdersResponse(savedOrder);
+	}
+
+
+	@Override// 단건 조회
+	@Transactional(readOnly = true)
+	public OrdersResponse findOne(Long orderId) {
+		Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문"));
+		OrdersResponse ordersResponse = new OrdersResponse(order);
+		return ordersResponse;
+		
+	}
+
+
+	@Override// 전체조회
+	@Transactional(readOnly = true)
+	public List<OrdersResponse> findAll() {
+		List<OrdersResponse> ordersResponses = new ArrayList<>();
+		for(Orders order : ordersRepository.findAll()) {
+			ordersResponses.add(new OrdersResponse(order));
+		}
+		return ordersResponses;
+	}
+
+
+	@Override// 삭제
+	public void deleteOrders(Long ordersId) {
+		Orders orders = ordersRepository.findById(ordersId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문"));
+		List<OrderItem> orderItems = orderItemRepository.findByOrdersNumber(ordersId);
+		for(OrderItem orderItem : orderItems) {
+//			productRepository.findById(orderItem.getProduct().getNumber()).get().addStock(orderItem.getCount());
+			Product product = orderItem.getProduct();
+			product.addStock(orderItem.getCount());
+			orderItemRepository.delete(orderItem);
+		}
+		ordersRepository.deleteById(ordersId);
+	}
+
+
+	@Override
+	public List<OrdersResponse> memberIdFound(Long memberId) {
+		List<Orders> memberOrders = ordersRepository.findByMemberNumber(memberId);
+		List<OrdersResponse> list = memberOrders.stream().map(OrdersResponse::new).toList();
+		return list;
+	}
+	
+	//memberId로 order 조회
+	
+	
 
 }

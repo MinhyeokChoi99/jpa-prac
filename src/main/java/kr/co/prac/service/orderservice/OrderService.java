@@ -1,5 +1,26 @@
 package kr.co.prac.service.orderservice;
 
-public interface OrderService {
+import java.util.List;
 
+import kr.co.prac.dto.OrderCreateRequest;
+import kr.co.prac.dto.OrdersResponse;
+import kr.co.prac.entity.Orders;
+
+public interface OrderService {
+	
+	OrdersResponse createOrder(OrderCreateRequest orderCreateRequest);
+	
+	OrdersResponse findOne(Long orderId);
+	
+	List<OrdersResponse> memberIdFound(Long memberId);
+	
+	List<OrdersResponse> findAll();
+	
+	void deleteOrders(Long ordersId);
+	
+	
+	
+	
+	
+	
 }

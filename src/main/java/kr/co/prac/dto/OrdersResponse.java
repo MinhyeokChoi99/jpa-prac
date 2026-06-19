@@ -1,10 +1,6 @@
 package kr.co.prac.dto;
 
 import java.time.LocalDateTime;
-
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import kr.co.prac.entity.Member;
 import kr.co.prac.entity.Orders;
 import kr.co.prac.entity.Status;
 import lombok.Getter;
@@ -12,15 +8,16 @@ import lombok.Getter;
 @Getter
 public class OrdersResponse {
 	private Long number;
-	private Member member;
-	private LocalDateTime order_date;
-	@Enumerated(EnumType.STRING)
+//	private Member member; 엔티티가 딸려가면 X
+	private Long memberId;
+	private LocalDateTime orderDate;
 	private Status status;
 	
 	public OrdersResponse(Orders orders) {
 		this.number = orders.getNumber();
-		this.member = orders.getMember();
-		this.order_date = orders.getOrder_date();
+//		this.member = orders.getMember();
+		this.memberId = orders.getMember().getNumber();
+		this.orderDate = orders.getOrderDate();
 		this.status = orders.getStatus();
 	}
 }

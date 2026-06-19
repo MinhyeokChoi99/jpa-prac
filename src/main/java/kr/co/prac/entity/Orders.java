@@ -24,7 +24,7 @@ public class Orders {
 	@JoinColumn(name = "member_id")
 	private Member member;
 	
-	private LocalDateTime order_date;
+	private LocalDateTime orderDate;
 	
 	@Enumerated(EnumType.STRING)
 	private Status status;
