@@ -83,6 +83,9 @@ public class OrderServiceImpl implements OrderService{
 	@Override// 삭제
 	public void deleteOrders(Long ordersId) {
 		Orders orders = ordersRepository.findById(ordersId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문"));
+		if(orders.getStatus() == Status.CANCEL) {
+			throw new IllegalStateException("이미 취소된 상태");
+		}
 		List<OrderItem> orderItems = orderItemRepository.findByOrdersNumber(ordersId);
 		for(OrderItem orderItem : orderItems) {		
 			Product product = orderItem.getProduct();

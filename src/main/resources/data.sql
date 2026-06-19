@@ -1,8 +1,8 @@
 INSERT INTO product (name, price, stock)
 VALUES
-('JPA Programming Book', 35000, 100),
-('Spring Boot Book', 42000, 80),
-('QueryDSL Book', 38000, 50);
+('JPA Programming Book', 35000, 98),
+('Spring Boot Book', 42000, 79),
+('QueryDSL Book', 38000, 47);
 
 INSERT INTO member (email, name)
 VALUES
