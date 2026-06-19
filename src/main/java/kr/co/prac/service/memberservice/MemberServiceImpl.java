@@ -40,9 +40,10 @@ public class MemberServiceImpl implements MemberService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Member> findAll() {
+	public List<MemberResponse> findAll() {
 		List<Member> members = memberRepository.findAll();
-		return members;
+		return members.stream().map(MemberResponse::new).toList();
+		
 	}
 
 	@Override

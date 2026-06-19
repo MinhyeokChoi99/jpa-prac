@@ -1,6 +1,7 @@
-package kr.co.prac.dto;
+package kr.co.prac.dto.order;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import kr.co.prac.entity.OrderItem;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,5 +16,6 @@ public class OrderCreateRequest {
 	private Long productNumber;
 	
 	@NotNull(message = "수량필수")
+	@Positive(message = "1건이상")
 	private Integer count;
 }

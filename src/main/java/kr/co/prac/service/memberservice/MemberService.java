@@ -15,7 +15,7 @@ public interface MemberService {
 	
 	MemberResponse find(Long id);
 	
-	List<Member> findAll();
+	List<MemberResponse> findAll();
 	
 	MemberResponse update(Long id, MemberUpdateRequest memberUpdateRequest);
 	

@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import kr.co.prac.dto.OrderCreateRequest;
-import kr.co.prac.dto.OrdersResponse;
+import kr.co.prac.dto.order.OrderCreateRequest;
+import kr.co.prac.dto.order.OrdersResponse;
 import kr.co.prac.service.orderservice.OrderService;
 import lombok.RequiredArgsConstructor;
 

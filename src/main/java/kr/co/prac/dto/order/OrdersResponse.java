@@ -1,4 +1,4 @@
-package kr.co.prac.dto;
+package kr.co.prac.dto.order;
 
 import java.time.LocalDateTime;
 import kr.co.prac.entity.Orders;

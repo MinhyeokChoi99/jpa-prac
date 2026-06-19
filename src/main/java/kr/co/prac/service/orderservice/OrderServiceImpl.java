@@ -7,8 +7,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import kr.co.prac.dto.OrderCreateRequest;
-import kr.co.prac.dto.OrdersResponse;
+import kr.co.prac.dto.order.OrderCreateRequest;
+import kr.co.prac.dto.order.OrdersResponse;
 import kr.co.prac.entity.OrderItem;
 import kr.co.prac.entity.Orders;
 import kr.co.prac.entity.Product;
@@ -90,7 +90,7 @@ public class OrderServiceImpl implements OrderService{
 			product.addStock(orderItem.getCount());
 			orderItemRepository.delete(orderItem);
 		}
-		ordersRepository.deleteById(ordersId);
+		orders.setStatus(Status.CANCEL);
 	}
 
 

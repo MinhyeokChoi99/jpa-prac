@@ -1,4 +1,4 @@
-package kr.co.prac.dto;
+package kr.co.prac.dto.product;
 
 import kr.co.prac.entity.Product;
 import lombok.Getter;

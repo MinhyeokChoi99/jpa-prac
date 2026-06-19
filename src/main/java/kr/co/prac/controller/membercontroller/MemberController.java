@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import kr.co.prac.dto.OrdersResponse;
 import kr.co.prac.dto.member.MemberCreateRequest;
 import kr.co.prac.dto.member.MemberResponse;
 import kr.co.prac.dto.member.MemberUpdateRequest;
+import kr.co.prac.dto.order.OrdersResponse;
 import kr.co.prac.entity.Member;
 import kr.co.prac.service.memberservice.MemberService;
 import kr.co.prac.service.orderservice.OrderService;
@@ -23,14 +23,14 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(name = "/member")
+@RequestMapping("/members")
 public class MemberController {
 
 
 	private final MemberService memberServiceImpl;
 	private final OrderService orderServiceImpl;
 	
-	@PostMapping("/apply") 
+	@PostMapping
 	public MemberResponse apply(@RequestBody MemberCreateRequest mr) {
 		MemberResponse appliedMember = memberServiceImpl.apply(mr);
 		return appliedMember;
@@ -43,8 +43,8 @@ public class MemberController {
 	}
 	
 	@GetMapping
-	public List<Member> findAll() {
-		List<Member> members = memberServiceImpl.findAll();
+	public List<MemberResponse> findAll() {
+		List<MemberResponse> members = memberServiceImpl.findAll();
 		return members;
 	}
 	
