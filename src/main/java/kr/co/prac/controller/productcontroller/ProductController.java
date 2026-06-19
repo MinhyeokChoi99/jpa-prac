@@ -1,4 +1,4 @@
-package kr.co.prac.controller.productcontorller;
+package kr.co.prac.controller.productcontroller;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public class ProductController {
 	
 	private final ProductService productServiceImpl;
 	
-	@GetMapping("/product")
+	@GetMapping("/products")
 	public List<ProductResponse> productList() {
 		return productServiceImpl.productList();
 	}
