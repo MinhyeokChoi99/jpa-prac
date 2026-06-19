@@ -84,11 +84,9 @@ public class OrderServiceImpl implements OrderService{
 	public void deleteOrders(Long ordersId) {
 		Orders orders = ordersRepository.findById(ordersId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문"));
 		List<OrderItem> orderItems = orderItemRepository.findByOrdersNumber(ordersId);
-		for(OrderItem orderItem : orderItems) {
-//			productRepository.findById(orderItem.getProduct().getNumber()).get().addStock(orderItem.getCount());
+		for(OrderItem orderItem : orderItems) {		
 			Product product = orderItem.getProduct();
 			product.addStock(orderItem.getCount());
-			orderItemRepository.delete(orderItem);
 		}
 		orders.setStatus(Status.CANCEL);
 	}
