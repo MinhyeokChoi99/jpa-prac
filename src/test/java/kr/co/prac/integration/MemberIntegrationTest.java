@@ -11,12 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import kr.co.prac.dto.member.MemberCreateRequest;
-import kr.co.prac.dto.member.MemberResponse;
-import kr.co.prac.dto.member.MemberUpdateRequest;
-import kr.co.prac.entity.Member;
-import kr.co.prac.repository.MemberRepository;
-import kr.co.prac.service.memberservice.MemberServiceImpl;
+import kr.co.prac.member.dto.MemberCreateRequest;
+import kr.co.prac.member.dto.MemberResponse;
+import kr.co.prac.member.dto.MemberUpdateRequest;
+import kr.co.prac.member.entity.Member;
+import kr.co.prac.member.repository.MemberRepository;
+import kr.co.prac.member.service.MemberServiceImpl;
+
 
 @SpringBootTest
 @Transactional
@@ -84,7 +85,7 @@ public class MemberIntegrationTest {
 		MemberResponse apply2 = memberServiceImpl.apply(memberCreateRequest2);
 		
 		long count = memberRepository.count();
-		List<Member> allMembers = memberServiceImpl.findAll();
+		List<MemberResponse> allMembers = memberServiceImpl.findAll();
 		
 		assertThat(count).isEqualTo(allMembers.size());
 		

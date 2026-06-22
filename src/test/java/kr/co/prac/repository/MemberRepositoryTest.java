@@ -6,7 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
-import kr.co.prac.entity.Member;
+import kr.co.prac.member.entity.Member;
+import kr.co.prac.member.repository.MemberRepository;
 
 @DataJpaTest
 public class MemberRepositoryTest {

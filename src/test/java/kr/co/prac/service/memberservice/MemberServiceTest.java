@@ -12,10 +12,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import kr.co.prac.dto.member.MemberCreateRequest;
-import kr.co.prac.dto.member.MemberResponse;
-import kr.co.prac.entity.Member;
-import kr.co.prac.repository.MemberRepository;
+import kr.co.prac.member.dto.MemberCreateRequest;
+import kr.co.prac.member.dto.MemberResponse;
+import kr.co.prac.member.entity.Member;
+import kr.co.prac.member.repository.MemberRepository;
+import kr.co.prac.member.service.MemberServiceImpl;
+
 
 @ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
