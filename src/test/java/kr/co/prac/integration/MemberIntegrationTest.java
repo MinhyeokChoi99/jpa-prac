@@ -106,7 +106,7 @@ public class MemberIntegrationTest {
 	
 	@Test
 	void 없는회원삭제() {
-		assertThrows(IllegalArgumentException.class, () -> memberServiceImpl.delete(1L));
+		assertThrows(IllegalArgumentException.class, () -> memberServiceImpl.delete(32432L));
 	}
 	
 	@Test

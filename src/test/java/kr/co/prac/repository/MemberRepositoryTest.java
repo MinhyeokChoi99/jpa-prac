@@ -1,5 +1,6 @@
 package kr.co.prac.repository;
 
+import kr.co.prac.global.config.JpaAuditingConfiguration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,8 +9,10 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
 import kr.co.prac.member.entity.Member;
 import kr.co.prac.member.repository.MemberRepository;
+import org.springframework.context.annotation.Import;
 
 @DataJpaTest
+@Import(JpaAuditingConfiguration.class)
 public class MemberRepositoryTest {
 
 	@Autowired

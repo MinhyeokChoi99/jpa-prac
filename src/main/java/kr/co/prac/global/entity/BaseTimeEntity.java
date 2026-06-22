@@ -18,7 +18,7 @@ public abstract class BaseTimeEntity {
 	
 	
 	@CreatedDate
-	@Column(name = "create_at", nullable = false, updatable = false)
+	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 	
 	
