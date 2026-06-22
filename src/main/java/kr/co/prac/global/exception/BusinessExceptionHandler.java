@@ -1,5 +1,6 @@
 package kr.co.prac.global.exception;
 
-public class BusinessExceptionHandler {
-
+public class BusinessExceptionHandler extends Exception{
+	
+	
 }
