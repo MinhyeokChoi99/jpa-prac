@@ -9,9 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import kr.co.prac.member.repository.MemberRepository;
 import kr.co.prac.orders.dto.OrderCreateRequest;
-import kr.co.prac.orders.dto.OrderStatus;
 import kr.co.prac.orders.dto.OrdersResponse;
 import kr.co.prac.orders.entity.OrderItem;
+import kr.co.prac.orders.entity.OrderStatus;
 import kr.co.prac.orders.entity.Orders;
 import kr.co.prac.orders.repository.OrderItemRepository;
 import kr.co.prac.orders.repository.OrdersRepository;

@@ -94,6 +94,43 @@ The current repository appears to include the following domains:
 - Orders
 - OrderItem
 
+Current GitHub-verified package state after the package-structure refactor:
+
+```text
+src/main/java/kr/co/prac
+├── PracApplication.java
+├── member
+│   ├── controller
+│   ├── dto
+│   ├── entity
+│   ├── repository
+│   └── service
+├── product
+│   ├── controller
+│   ├── dto
+│   ├── entity
+│   ├── repository
+│   └── service
+└── orders
+    ├── controller
+    ├── dto
+    ├── entity
+    ├── repository
+    └── service
+```
+
+Important confirmed details:
+
+- Main application class remains in `kr.co.prac.PracApplication`.
+- `Member` is now in `kr.co.prac.member.entity`.
+- `Product` is now in `kr.co.prac.product.entity`.
+- `Orders` and `OrderItem` are now in `kr.co.prac.orders.entity`.
+- `MemberRepository`, `ProductRepository`, `OrdersRepository`, and `OrderItemRepository` are inside their corresponding domain packages.
+- `MemberController`, `ProductController`, and `OrdersController` are inside their corresponding domain packages.
+- `OrderStatus` is currently located in `kr.co.prac.orders.dto`; this works technically but should be moved to `kr.co.prac.orders.entity` because it represents order domain state, not request/response data.
+- A `global` package has not yet been confirmed in the repository. Global exception handling remains a next stabilization task.
+- The project currently uses `orders` as the package name instead of the previously suggested singular `order`. This is acceptable if used consistently, especially because the entity is named `Orders`. Avoid mixing both `order` and `orders` packages.
+
 The current project appears to include:
 
 - Member CRUD
@@ -120,8 +157,6 @@ Seed data currently includes:
 - Order items
 
 The project is already beyond a pure CRUD toy example because it contains basic business behavior around orders and stock.
-
----
 
 ## 5. Current Domain Understanding
 
@@ -299,7 +334,7 @@ because cancelling an order is not the same as deleting order history.
 
 ## 7. Current Architecture
 
-Current architecture appears to follow layered architecture:
+Current architecture follows layered architecture inside feature-based packages:
 
 ```text
 Controller
@@ -311,26 +346,10 @@ Repository
 Entity / Database
 ```
 
-Current package direction appears to include:
+Current GitHub-verified package direction:
 
 ```text
 kr.co.prac
-├── controller
-├── dto
-├── entity
-├── repository
-├── service
-└── resources
-```
-
-Recommended future package structure:
-
-```text
-kr.co.prac
-├── global
-│   ├── exception
-│   ├── response
-│   └── config
 ├── member
 │   ├── controller
 │   ├── service
@@ -343,7 +362,7 @@ kr.co.prac
 │   ├── repository
 │   ├── entity
 │   └── dto
-├── order
+├── orders
 │   ├── controller
 │   ├── service
 │   ├── repository
@@ -352,28 +371,31 @@ kr.co.prac
 └── PracApplication.java
 ```
 
+Recommended next package additions:
+
+```text
+kr.co.prac
+├── global
+│   ├── exception
+│   ├── response
+│   └── config
+└── auth
+    ├── controller
+    ├── service
+    ├── dto
+    └── security
+```
+
+Current assessment:
+
+- The feature-based package refactor has mostly been completed for `member`, `product`, and `orders`.
+- The main remaining structure issue is that `OrderStatus` should move from `orders.dto` to `orders.entity`.
+- The `global` package should be introduced next for exception handling and response/error format classes.
+- The `auth` package should be added later when signup/login implementation starts.
+
 Recommendation:
 
-As the project grows, feature-based packages are likely cleaner than layer-only packages.
-
-For example:
-
-```text
-member/controller
-member/service
-member/repository
-member/dto
-```
-
-is usually easier to maintain than:
-
-```text
-controller/membercontroller
-service/memberservice
-dto/member
-```
-
----
+As the project grows, feature-based packages are cleaner than layer-only packages. The current direction is appropriate. Keep package names lowercase and avoid mixed structures such as having both `order` and `orders` packages.
 
 ## 8. Current Code Review Priorities
 
@@ -495,16 +517,30 @@ or return raw DTOs directly.
 
 For a beginner project, raw DTOs are acceptable. For portfolio/production direction, a consistent response format is better.
 
-### 5. Improve package naming
+### 5. Continue package cleanup after the feature-based refactor
 
-Java package names should be lowercase.
+The repository has moved toward feature-based packages:
+
+```text
+member / product / orders
+```
+
+Next cleanup items:
+
+- Keep the current `orders` package name consistently, or later rename it to `order` in a separate refactor if desired.
+- Move `OrderStatus` from `orders.dto` to `orders.entity`.
+- Add `global.exception`, `global.response`, and `global.config` when global exception/config work begins.
+- Add `auth` only when signup/login work begins.
+
+Java package names should stay lowercase.
 
 Prefer:
 
 ```text
-product/service
 member/service
-order/service
+product/service
+orders/service
+global/exception
 ```
 
 Avoid mixed-case package names such as:
@@ -538,8 +574,6 @@ public OrderResponse cancelOrder(Long orderId) {
     return OrderResponse.from(order);
 }
 ```
-
----
 
 ## 10. Recommended Next Feature: Login
 
@@ -863,13 +897,23 @@ This document gives long-term context, but exact code review should still be bas
 
 ## 17. Current Best Next Step
 
+Current verified state:
+
+1. `PROJECT_CONTEXT.md` exists.
+2. `PROJECT_LOG.md` exists.
+3. Package structure has been refactored toward feature-based packages.
+4. Current main packages are `member`, `product`, and `orders`.
+5. `global` and `auth` packages are not yet the immediate implemented structure.
+
 Recommended next step:
 
-1. Add `PROJECT_CONTEXT.md`
-2. Add or improve `README.md`
-3. Refactor package naming and structure
-4. Add global exception handling
-5. Separate local/test/prod configuration
-6. Then add login with Spring Security
+1. Move `OrderStatus` from `orders.dto` to `orders.entity`.
+2. Add global exception handling.
+3. Add `ErrorResponse` and decide the error response format.
+4. Separate local/test/prod configuration.
+5. Improve order cancellation from `DELETE /orders/{orderId}` to `POST /orders/{orderId}/cancel`.
+6. Review transaction boundaries and JPA mappings.
+7. Then add signup with Spring Security.
+8. Then add session-based login.
 
 The next major feature can be login, but the project should first stabilize error handling, configuration, and package structure so authentication does not get built on top of fragile foundations.

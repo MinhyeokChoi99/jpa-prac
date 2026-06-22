@@ -2,6 +2,7 @@ package kr.co.prac.orders.dto;
 
 import java.time.LocalDateTime;
 
+import kr.co.prac.orders.entity.OrderStatus;
 import kr.co.prac.orders.entity.Orders;
 import lombok.Getter;
 

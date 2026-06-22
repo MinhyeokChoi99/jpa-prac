@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import kr.co.prac.member.entity.Member;
-import kr.co.prac.orders.dto.OrderStatus;
 import lombok.Getter;
 import lombok.Setter;
 
