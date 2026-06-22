@@ -12,11 +12,15 @@ Use this file as a handoff document when continuing the project in a new chat se
 - Repository: `https://github.com/MinhyeokChoi99/jpa-prac`
 - Main purpose: Java + Spring + MySQL practice project
 - Long-term goal: Build a portfolio-level, production-minded Spring web application
-- Main domain:
-  - Member
-  - Product
-  - Orders
-  - OrderItem
+- User language: Korean
+- Assistant response style: Korean explanation + Java/Spring examples
+
+Main domain:
+
+- Member
+- Product
+- Orders
+- OrderItem
 
 Current confirmed tech stack:
 
@@ -68,6 +72,11 @@ Current feature-based package structure:
 ```text
 src/main/java/kr/co/prac
 ├── PracApplication.java
+├── global
+│   ├── config
+│   │   └── JpaAuditingConfiguration.java
+│   └── entity
+│       └── BaseTimeEntity.java
 ├── member
 │   ├── controller
 │   │   └── MemberController.java
@@ -93,10 +102,10 @@ src/main/java/kr/co/prac
     ├── controller
     │   └── OrdersController.java
     ├── dto
-    │   └── OrderStatus.java   // should move to orders/entity
     ├── entity
     │   ├── Orders.java
-    │   └── OrderItem.java
+    │   ├── OrderItem.java
+    │   └── OrderStatus.java
     ├── repository
     │   ├── OrdersRepository.java
     │   └── OrderItemRepository.java
@@ -106,11 +115,11 @@ src/main/java/kr/co/prac
 
 Assessment:
 
-- The main package refactor from layer-based packages to feature-based packages has been mostly completed.
-- `member`, `product`, and `orders` are now separated by domain.
-- The main Spring Boot application class remains in the correct parent package, `kr.co.prac`, so component/entity/repository scanning should still work for subpackages.
+- The main package refactor from layer-based packages to feature-based packages has been completed enough to continue Phase 0 stabilization.
+- `member`, `product`, and `orders` are separated by domain.
 - The current package name is `orders`, not `order`. This is acceptable if it stays consistent.
-- `global` has not yet been confirmed as implemented.
+- `OrderStatus` has been moved to `orders.entity`; this is now correct because order status is domain state, not a DTO.
+- `global.config` and `global.entity` now exist for shared infrastructure/configuration.
 - `auth` should be added later when signup/login work begins.
 
 ---
@@ -121,17 +130,16 @@ Current recommended priority:
 
 ### Phase 0: Project Stabilization Before Authentication
 
-The package-structure refactor has been pushed, but stabilization is not fully complete yet.
+The package-structure refactor and basic auditing timestamp support have been pushed, but stabilization is not fully complete yet.
 
-1. Move `OrderStatus` from `orders.dto` to `orders.entity`.
-2. Add or improve global exception handling.
-3. Define a consistent error response format.
-4. Separate application configuration by profile, such as local, test, and prod.
-5. Review DTO usage and avoid exposing entities directly through APIs.
-6. Improve order cancellation API from deletion-style behavior to a domain command.
-7. Review transaction boundaries in service methods.
-8. Review current JPA mappings for Member, Product, Orders, and OrderItem.
-9. Review current tests and decide which tests should be added before authentication.
+1. Add or improve global exception handling.
+2. Define a consistent error response format.
+3. Separate application configuration by profile, such as local, test, and prod.
+4. Review DTO usage and avoid exposing entities directly through APIs.
+5. Improve order cancellation API from deletion-style behavior to a domain command.
+6. Review transaction boundaries in service methods.
+7. Review current JPA mappings for Member, Product, Orders, and OrderItem.
+8. Review current tests and decide which tests should be added before authentication.
 
 ### Phase 1: Member and Authentication
 
@@ -175,19 +183,39 @@ Authentication should begin only after the basic project structure is stable.
 ```text
 Decision:
 - Keep the current pushed feature-based structure as the base.
-- Current implemented domain packages are `member`, `product`, and `orders`.
-- Do not mix `order` and `orders` packages.
-- Add `global` next for exception/config/response concerns.
-- Add `auth` later when signup/login implementation starts.
+- Current implemented domain packages are member, product, and orders.
+- Do not mix order and orders packages.
+- Add global packages for exception/config/response/common entity concerns.
+- Add auth later when signup/login implementation starts.
 
 Reason:
 - Feature-based packages are easier to maintain as the project grows.
 - The current structure already separates member, product, and orders concerns.
-- Additional renaming from `orders` to `order` is optional and not urgent.
+- Additional renaming from orders to order is optional and not urgent.
 
 Status:
-- Mostly completed.
-- One cleanup remains: move `OrderStatus` from `orders.dto` to `orders.entity`.
+- Completed enough for now.
+- OrderStatus has been moved to orders.entity.
+```
+
+### Auditing Decision
+
+```text
+Decision:
+- Add entity timestamp auditing during Phase 0 stabilization.
+- Add createdAt and updatedAt through BaseTimeEntity.
+- Use global.config.JpaAuditingConfiguration to enable JPA auditing.
+- Apply BaseTimeEntity to Member, Product, Orders, and OrderItem.
+- Do not add createdBy or updatedBy yet.
+
+Reason:
+- createdAt and updatedAt are common operational fields for main entities.
+- Auditing timestamps are infrastructure/stabilization work, not a large business feature.
+- createdBy and updatedBy require a meaningful authenticated principal, so they should wait until Spring Security/session login is introduced.
+
+Status:
+- Implemented and pushed.
+- Minor cleanup recommended: make BaseTimeEntity abstract, add getters, and explicitly name created_at/updated_at columns if desired.
 ```
 
 ---
@@ -206,13 +234,21 @@ Task:
 - Clarified that project stabilization should happen before authentication implementation.
 - Refactored and pushed the main package structure toward feature-based packages.
 - Confirmed from GitHub that `member`, `product`, and `orders` packages now exist under `kr.co.prac`.
+- Moved `OrderStatus` into `orders.entity`.
+- Added auditing timestamp support:
+  - `global.config.JpaAuditingConfiguration`
+  - `global.entity.BaseTimeEntity`
+  - `createdAt`
+  - `updatedAt`
+  - entity inheritance for `Member`, `Product`, `Orders`, and `OrderItem`
+- Updated `data.sql` seed data to include `created_at` and `updated_at` values.
 
 Notes:
 - This file will be used to preserve project continuity across deleted or newly created chat sessions.
 - `PROJECT_CONTEXT.md` remains the stable project reference document.
 - `PROJECT_LOG.md` tracks current decisions, progress, and next tasks.
 - Current immediate focus is not login implementation yet.
-- Current immediate focus is the remaining stabilization work after package refactoring.
+- Current immediate focus is the remaining stabilization work after package refactoring and auditing.
 
 ---
 
@@ -222,10 +258,12 @@ Notes:
 
 ```text
 Task: Project stabilization before authentication
-Status: Package structure refactor pushed; remaining stabilization in progress
+Status: Package structure refactor and auditing timestamps pushed; remaining stabilization in progress
 Related files:
 - PROJECT_CONTEXT.md
 - PROJECT_LOG.md
+- src/main/java/kr/co/prac/global/config/JpaAuditingConfiguration.java
+- src/main/java/kr/co/prac/global/entity/BaseTimeEntity.java
 - src/main/java/kr/co/prac/member/**
 - src/main/java/kr/co/prac/product/**
 - src/main/java/kr/co/prac/orders/**
@@ -235,6 +273,7 @@ Related files:
 Notes:
 - Login/authentication is not the immediate implementation step yet.
 - The main package refactor has been pushed.
+- Auditing timestamps have been added.
 - Before implementing login, the project should still stabilize exception handling, configuration profiles, DTO boundaries, API conventions, and order cancellation behavior.
 - Signup should be implemented before login after stabilization is complete.
 - Session-based login is the first authentication target.
@@ -248,23 +287,25 @@ Notes:
 Keep this list short and ordered.
 
 ```text
-1. Move OrderStatus from orders.dto to orders.entity.
-2. Add global.exception.GlobalExceptionHandler.
+1. Add global.exception.GlobalExceptionHandler.
+2. Add global.exception.ErrorCode.
 3. Add global.exception.ErrorResponse.
-4. Decide whether to add global.response.ApiResponse now or later.
-5. Separate application configuration into local/test/prod profiles.
-6. Improve order cancellation API from DELETE /orders/{orderId} to POST /orders/{orderId}/cancel.
-7. Review service transaction boundaries.
-8. Review JPA mappings for Member, Product, Orders, and OrderItem.
-9. Review current tests and add missing tests for stock/order behavior.
-10. After stabilization, add password and role to Member.
-11. Add PasswordEncoder.
-12. Implement signup API.
-13. Implement CustomUserDetails and CustomUserDetailsService.
-14. Implement session-based login.
-15. Add GET /api/me.
-16. Add role-based authorization for USER and ADMIN.
-17. Consider JWT after the basic authentication and authorization flow is stable.
+4. Add global.exception.BusinessException.
+5. Replace meaningful IllegalArgumentException / IllegalStateException usages with domain-specific exceptions.
+6. Decide whether to add global.response.ApiResponse now or later.
+7. Separate application configuration into local/test/prod profiles.
+8. Improve order cancellation API from DELETE /orders/{orderId} to POST /orders/{orderId}/cancel.
+9. Review service transaction boundaries.
+10. Review JPA mappings for Member, Product, Orders, and OrderItem.
+11. Review current tests and add missing tests for stock/order/auditing behavior if useful.
+12. After stabilization, add password and role to Member.
+13. Add PasswordEncoder.
+14. Implement signup API.
+15. Implement CustomUserDetails and CustomUserDetailsService.
+16. Implement session-based login.
+17. Add GET /api/me.
+18. Add role-based authorization for USER and ADMIN.
+19. Consider JWT after the basic authentication and authorization flow is stable.
 ```
 
 ---
@@ -274,10 +315,19 @@ Keep this list short and ordered.
 ### Important
 
 ```text
-- OrderStatus is currently in orders.dto, but it represents order domain state. Move it to orders.entity.
 - OrdersController still uses DELETE /orders/{orderId} for cancellation-like behavior. This should become POST /orders/{orderId}/cancel later.
-- ProductController imports org.springframework.stereotype.Controller even though it uses @RestController. Remove the unused import during cleanup.
-- A global exception package has not yet been confirmed. Add global.exception next.
+- ProductController imports org.springframework.stereotype.Controller even though it uses @RestController. Remove the unused import during cleanup if still present.
+- Global exception handling has not yet been implemented. Add global.exception next.
+- Current service/entity code still uses broad exceptions such as IllegalArgumentException and IllegalStateException for meaningful business failures. Replace gradually with domain-specific exceptions.
+```
+
+### Auditing Cleanup Recommendations
+
+```text
+- BaseTimeEntity currently works structurally, but it is better as an abstract class because it should not be instantiated directly.
+- BaseTimeEntity should expose getters for createdAt and updatedAt if DTOs/tests need to read auditing timestamps later.
+- Explicit @Column(name = "created_at") and @Column(name = "updated_at") are recommended for clarity, especially because data.sql uses snake_case column names.
+- createdBy and updatedBy should not be added until authentication/Spring Security is introduced.
 ```
 
 ### Optional
@@ -296,7 +346,7 @@ Keep this list short and ordered.
 ```text
 Decision:
 - Stabilize the project before implementing signup/login.
-- Focus first on package structure, exception handling, configuration profiles, DTO/API conventions, order cancellation semantics, transaction boundaries, and JPA mappings.
+- Focus first on package structure, auditing timestamps, exception handling, configuration profiles, DTO/API conventions, order cancellation semantics, transaction boundaries, and JPA mappings.
 - Authentication should be built after the backend foundation becomes cleaner and more consistent.
 
 Reason:
@@ -307,6 +357,7 @@ Reason:
 Status:
 - Decided.
 - Package structure is mostly completed.
+- Auditing timestamps are implemented.
 - Remaining stabilization tasks are still pending.
 ```
 
@@ -359,14 +410,17 @@ Decision:
 - Do not rely on local database settings as production settings.
 - Avoid hardcoded database credentials.
 - Reduce long-term reliance on ddl-auto=create.
+- Keep auditing timestamps as application-level entity metadata.
 
 Reason:
 - Profile separation is necessary for local development, tests, and future deployment.
 - Hardcoded credentials and destructive schema settings are not production-safe.
+- Auditing timestamps are useful for debugging, administration, and future production-readiness.
 
 Status:
 - Recommended.
-- Implementation should happen during project stabilization before authentication.
+- Auditing timestamps implemented.
+- Profile separation still pending.
 ```
 
 ---
@@ -375,179 +429,190 @@ Status:
 
 ### Member
 
-```text
-Current state:
-- Member is in member.entity.
-- MemberController, MemberService, and MemberRepository are in the member package.
-- Known fields include number, name, and email.
+Current role:
 
-Future direction:
-- Add password.
-- Add role.
-- Make email unique.
-- Use Member as the authentication subject.
-- Add signup before login.
-```
+- User/customer-like entity.
+- Eventually becomes authentication subject.
+
+Current/expected fields:
+
+- number
+- name
+- email
+- createdAt
+- updatedAt
+
+Near-future direction:
+
+- Add password only when signup/security implementation begins.
+- Add role such as USER/ADMIN when authorization is introduced.
+- Add unique email constraint and duplicate email handling.
 
 ### Product
 
-```text
-Current state:
-- Product is in product.entity.
-- ProductController, ProductService, and ProductRepository are in the product package.
-- Known fields include number, name, price, and stock.
-- Product has stock increase/decrease domain methods.
+Current role:
 
-Future direction:
-- Add admin-only product create/update/delete APIs.
-- Add product detail API.
-- Add product search/filtering and pagination.
-```
+- Item that can be ordered.
+- Holds price and stock.
+
+Current/expected fields:
+
+- number
+- name
+- price
+- stock
+- createdAt
+- updatedAt
+
+Important current behavior:
+
+- Stock can increase/decrease.
+- Stock shortage should eventually use a domain-specific exception instead of broad IllegalArgumentException.
+
+Near-future direction:
+
+- Admin-only product CRUD after authentication/authorization.
+- Product detail API.
+- Product pagination/search.
 
 ### Orders
 
-```text
-Current state:
-- Orders is in orders.entity.
-- OrdersController, OrderService, and OrdersRepository are in the orders package.
-- Current behavior includes order creation, order detail retrieval, order list retrieval, member-specific order lookup, and deletion-style cancellation.
+Current role:
 
-Future direction:
-- Replace deletion-style cancellation with POST /orders/{orderId}/cancel.
-- Move OrderStatus to orders.entity.
-- Add order total price.
-- Return order items in order detail response.
+- Order transaction connected to Member.
+
+Current/expected fields:
+
+- number
+- member
+- orderDate
+- status
+- createdAt
+- updatedAt
+
+Near-future direction:
+
+- Replace deletion-style cancellation endpoint with command endpoint.
 - Prevent duplicate cancellation.
-- After login, use current-user APIs such as GET /api/me/orders.
-```
+- Return order detail with order items.
+- Calculate total price.
 
 ### OrderItem
 
-```text
-Current state:
-- OrderItem is in orders.entity.
-- OrderItemRepository is in orders.repository.
-- OrderItem connects Orders and Product.
-- It preserves order price and count at the time of ordering.
+Current role:
 
-Future direction:
-- Use DTOs for order item responses.
-- Be careful with lazy loading and N+1 queries.
-- Add order detail response that includes order items.
+- Order line item connecting Orders and Product.
+
+Current/expected fields:
+
+- number
+- orders
+- product
+- orderPrice
+- count
+- createdAt
+- updatedAt
+
+Near-future direction:
+
+- Keep order price snapshot.
+- Avoid exposing entity graph directly through API responses.
+- Watch lazy loading/N+1 query problems.
+
+---
+
+## 12. Exception Handling Plan
+
+Next stabilization target:
+
+```text
+global.exception
+├── BusinessException.java
+├── ErrorCode.java
+├── ErrorResponse.java
+└── GlobalExceptionHandler.java
+```
+
+Recommended first domain exceptions:
+
+```text
+member.exception
+├── MemberNotFoundException.java
+└── DuplicateEmailException.java
+
+product.exception
+├── ProductNotFoundException.java
+└── OutOfStockException.java
+
+orders.exception
+├── OrderNotFoundException.java
+├── AlreadyCanceledOrderException.java
+└── EmptyOrderRequestException.java
+```
+
+Initial ErrorCode candidates:
+
+```text
+MEMBER_NOT_FOUND
+DUPLICATE_EMAIL
+PRODUCT_NOT_FOUND
+OUT_OF_STOCK
+ORDER_NOT_FOUND
+EMPTY_ORDER_REQUEST
+ALREADY_CANCELED_ORDER
+INVALID_INPUT_VALUE
+INTERNAL_SERVER_ERROR
+```
+
+Principle:
+
+- Define only meaningful business failures explicitly.
+- Let validation failures be handled by a validation exception handler.
+- Let unexpected system failures fall back to INTERNAL_SERVER_ERROR.
+
+---
+
+## 13. Testing Notes
+
+Current recommended next tests:
+
+```text
+- Member creation success
+- Duplicate email failure after exception handling is added
+- Product stock decrease success
+- Product stock shortage failure
+- Order creation success
+- Order cancellation success
+- Duplicate cancellation failure
+- Auditing timestamp non-null check if useful
+```
+
+For auditing specifically:
+
+```text
+- Repository save should populate createdAt and updatedAt.
+- data.sql seed rows must include created_at and updated_at because SQL initialization bypasses JPA auditing listeners.
 ```
 
 ---
 
-## 12. Testing Notes
+## 14. Next Best Step
 
-### Existing Tests
-
-```text
-- Some member-related tests exist according to project context.
-- Exact current test package structure still needs review after the package refactor.
-```
-
-### Recommended Tests
+The next best implementation step is:
 
 ```text
-Before authentication:
-- Product stock decrease success.
-- Product stock shortage failure.
-- Order creation success.
-- Order cancellation success.
-- Duplicate cancellation failure.
-- Global exception response format.
-- Basic controller validation errors.
-
-After authentication:
-- Member signup success.
-- Duplicate email failure.
-- Password encoding verification at a behavior level.
-- Current-user order lookup after authentication is added.
-- Admin-only product management access control after authorization is added.
+Global exception handling
 ```
 
----
+Reason:
 
-## 13. Blockers / Questions
+- Package structure is now mostly stable.
+- Auditing timestamps are implemented.
+- The current service/entity code still uses broad exceptions for domain failures.
+- Authentication should not be implemented before error handling conventions are clear.
 
-```text
-- Need to confirm whether all test imports were updated after the package refactor.
-- Need to decide whether to keep package name orders permanently or later rename it to order.
-- Need to add global exception handling before authentication.
-- Need to separate application profiles before production-minded deployment work.
-```
+Recommended next commit message:
 
----
-
-## 14. New Chat Handoff Summary
-
-When starting a new chat session, paste or upload `PROJECT_CONTEXT.md` and this file.
-
-Use this summary:
-
-```text
-This project is `jpa-prac`, a Java 21 + Spring Boot + MySQL practice project.
-The goal is to grow it into a portfolio-level Spring web application.
-The main domains are Member, Product, Orders, and OrderItem.
-
-Use PROJECT_CONTEXT.md as the stable project reference.
-Use PROJECT_LOG.md as the current progress and handoff record.
-
-The assistant should act as a Spring/JPA teacher and code reviewer.
-Explain concepts in Korean, provide Java/Spring examples when useful, and review code with production-readiness and portfolio-readiness in mind.
-
-Current GitHub-verified structure:
-- kr.co.prac.member
-- kr.co.prac.product
-- kr.co.prac.orders
-- kr.co.prac.PracApplication
-
-Current immediate priority:
-1. Move OrderStatus from orders.dto to orders.entity.
-2. Add or improve global exception handling.
-3. Add consistent error response format.
-4. Separate application profiles.
-5. Improve order cancellation API.
-6. Review transaction boundaries and JPA mappings.
-7. Then implement signup.
-8. Then implement session-based login.
-9. Add authorization.
-10. Prepare for future React/Vue frontend separation.
-11. Consider JWT later after Spring Security basics are understood.
-
-Important authentication decision:
-- Implement session-based login first.
-- Consider JWT later.
-- Keep service logic independent from session/request/JWT details.
-- Controllers may use @AuthenticationPrincipal, but services should receive values such as memberId.
-
-Project log workflow:
-- Keep one PROJECT_LOG.md file.
-- When updates are needed, the assistant should generate a complete updated file for download.
-```
-
----
-
-## 15. Update Template
-
-Use this template whenever the project state changes.
-
-```md
-## YYYY-MM-DD
-
-### Completed
-- 
-
-### Decisions
-- 
-
-### Problems Found
-- 
-
-### Next
-- 
-
-### Notes for Future Chat
-- 
+```bash
+git commit -m "feat: add global exception handling"
 ```

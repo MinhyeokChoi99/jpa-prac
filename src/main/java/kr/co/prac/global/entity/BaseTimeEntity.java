@@ -9,18 +9,20 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import lombok.Getter;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public class BaseTimeEntity {
+@Getter
+public abstract class BaseTimeEntity {
 	
 	
 	@CreatedDate
-	@Column(nullable = false, updatable = false)
+	@Column(name = "create_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 	
 	
 	@LastModifiedDate
-	@Column(nullable = false)
+	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
 }

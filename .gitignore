@@ -1,23 +1,38 @@
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+### Logs ###
+*.log
+
+### OS ###
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+### Local environment ###
+.env
+.env.*
+application-local.yml
+application-local.properties
+
+### STS / Eclipse ###
 .apt_generated
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
-.sts4-cache
+.sts4-cache/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
+out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -31,5 +46,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-./DS_Store
