@@ -6,12 +6,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import kr.co.prac.global.entity.BaseTimeEntity;
 import kr.co.prac.product.entity.Product;
 import lombok.Getter;
 import lombok.Setter;
 @Entity
 @Getter @Setter
-public class OrderItem {
+public class OrderItem extends BaseTimeEntity {
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long number;
 	

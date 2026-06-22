@@ -1,24 +1,24 @@
-INSERT INTO product (name, price, stock)
+INSERT INTO product (name, price, stock, created_at, updated_at)
 VALUES
-('JPA Programming Book', 35000, 98),
-('Spring Boot Book', 42000, 79),
-('QueryDSL Book', 38000, 47);
+('JPA Programming Book', 35000, 98, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('Spring Boot Book', 42000, 79, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('QueryDSL Book', 38000, 47, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO member (email, name)
+INSERT INTO member (email, name, created_at, updated_at)
 VALUES
-('kim@example.com', 'Kim'),
-('lee@example.com', 'Lee'),
-('park@example.com', 'Park');
+('kim@example.com', 'Kim', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('lee@example.com', 'Lee', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('park@example.com', 'Park', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO orders (member_id, order_date, status)
+INSERT INTO orders (member_id, order_date, status, created_at, updated_at)
 VALUES
-(1, CURRENT_TIMESTAMP, 'READY'),
-(2, CURRENT_TIMESTAMP, 'PROCESS'),
-(3, CURRENT_TIMESTAMP, 'CANCEL');
+(1, CURRENT_TIMESTAMP, 'READY', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, CURRENT_TIMESTAMP, 'PROCESS', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, CURRENT_TIMESTAMP, 'CANCEL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO order_item (order_id, product_id, order_price, count)
+INSERT INTO order_item (order_id, product_id, order_price, count, created_at, updated_at)
 VALUES
-(1, 1, 70000, 2),
-(1, 2, 42000, 1),
-(2, 3, 114000, 3),
-(3, 1, 35000, 1);
+(1, 1, 70000, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 2, 42000, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 3, 114000, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 1, 35000, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
