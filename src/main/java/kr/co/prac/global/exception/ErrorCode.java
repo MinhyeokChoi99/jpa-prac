@@ -1,6 +1,7 @@
 package kr.co.prac.global.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import lombok.Getter;
 
@@ -18,12 +19,12 @@ public enum ErrorCode {
 	ALREADY_CANCELLED_ORDER(HttpStatus.BAD_REQUEST,"이미 취소된 주문입니다"),
 	//재고부족
 	NOT_ENOUGH_STOCK(HttpStatus.BAD_REQUEST,"재고가 부족합니다"),
-	// 서버오류
-	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"서버 내부의 오류가 발생했습니다"),
 	//존재하지 않는 상품을 주문하려고 할때
 	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다"),
-	// INPUT을 잘못주었을때
-	INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다");
+	// INPUT을 잘못주었을때 -> MethodArgumentNotValidException
+	INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다"),
+	// 서버오류 -> GlobalExceptionHandler(Exception.class)
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"서버 내부의 오류가 발생했습니다");
 
 	private final HttpStatus httpStatus;
 	private final String errorMessage;

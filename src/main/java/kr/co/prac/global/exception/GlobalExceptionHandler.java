@@ -1,6 +1,7 @@
 package kr.co.prac.global.exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -11,6 +12,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
         ErrorCode errorCode = e.getErrorCode();
         return new ResponseEntity<>(ErrorResponse.from(errorCode),errorCode.getHttpStatus());
+    }
+    
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> methodArgumentNotValidException(MethodArgumentNotValidException e) {
+        return new ResponseEntity<>(ErrorResponse.from(ErrorCode.INVALID_INPUT_VALUE),ErrorCode.INVALID_INPUT_VALUE.getHttpStatus());
     }
 
     @ExceptionHandler(Exception.class)

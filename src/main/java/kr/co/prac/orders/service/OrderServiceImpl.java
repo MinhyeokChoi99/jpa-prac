@@ -7,20 +7,20 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import kr.co.prac.member.exception.MemberNotFound;
+import kr.co.prac.member.exception.MemberNotFoundException;
 import kr.co.prac.member.repository.MemberRepository;
 import kr.co.prac.orders.dto.OrderCreateRequest;
 import kr.co.prac.orders.dto.OrdersResponse;
 import kr.co.prac.orders.entity.OrderItem;
 import kr.co.prac.orders.entity.OrderStatus;
 import kr.co.prac.orders.entity.Orders;
-import kr.co.prac.orders.exception.AlreadyCancelledOrder;
-import kr.co.prac.orders.exception.EmptyItemOrder;
-import kr.co.prac.orders.exception.OrderNotFound;
+import kr.co.prac.orders.exception.AlreadyCancelledOrderException;
+import kr.co.prac.orders.exception.EmptyItemOrderException;
+import kr.co.prac.orders.exception.OrderNotFoundException;
 import kr.co.prac.orders.repository.OrderItemRepository;
 import kr.co.prac.orders.repository.OrdersRepository;
 import kr.co.prac.product.entity.Product;
-import kr.co.prac.product.exception.ProductNotFound;
+import kr.co.prac.product.exception.ProductNotFoundException;
 import kr.co.prac.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -40,16 +40,16 @@ public class OrderServiceImpl implements OrderService{
 	public OrdersResponse createOrder(List<OrderCreateRequest> orderCreateRequests) {
 		// 빈리스트로 요청이 들어왔을 경우 검증
 		if(orderCreateRequests == null || orderCreateRequests.isEmpty()) {
-			throw new EmptyItemOrder();
+			throw new EmptyItemOrderException();
 		}
 		Orders order = new Orders();
-		order.setMember(memberRepository.findById(orderCreateRequests.get(0).getMemberId()).orElseThrow(MemberNotFound::new));
+		order.setMember(memberRepository.findById(orderCreateRequests.get(0).getMemberId()).orElseThrow(MemberNotFoundException::new));
 		order.setOrderDate(LocalDateTime.now());
 		order.setStatus(OrderStatus.READY);
 		Orders savedOrder = ordersRepository.save(order);
 		
 		for(OrderCreateRequest orderCreateRequest : orderCreateRequests) {
-			Product product = productRepository.findById(orderCreateRequest.getProductNumber()).orElseThrow(ProductNotFound::new);
+			Product product = productRepository.findById(orderCreateRequest.getProductNumber()).orElseThrow(ProductNotFoundException::new);
 			product.removeStock(orderCreateRequest.getCount());
 			
 			OrderItem orderItem = new OrderItem();
@@ -67,7 +67,7 @@ public class OrderServiceImpl implements OrderService{
 	@Override// 단건 조회
 	@Transactional(readOnly = true)
 	public OrdersResponse findOne(Long orderId) {
-		Orders order = ordersRepository.findById(orderId).orElseThrow(OrderNotFound::new);
+		Orders order = ordersRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
 		OrdersResponse ordersResponse = new OrdersResponse(order);
 		return ordersResponse;
 		
@@ -87,9 +87,9 @@ public class OrderServiceImpl implements OrderService{
 
 	@Override// 삭제
 	public void deleteOrders(Long ordersId) {
-		Orders orders = ordersRepository.findById(ordersId).orElseThrow(OrderNotFound::new);
+		Orders orders = ordersRepository.findById(ordersId).orElseThrow(OrderNotFoundException::new);
 		if(orders.getStatus() == OrderStatus.CANCEL) {
-			throw new AlreadyCancelledOrder();
+			throw new AlreadyCancelledOrderException();
 		}
 		List<OrderItem> orderItems = orderItemRepository.findByOrdersNumber(ordersId);
 		for(OrderItem orderItem : orderItems) {		

@@ -15,8 +15,8 @@ import kr.co.prac.member.dto.MemberCreateRequest;
 import kr.co.prac.member.dto.MemberResponse;
 import kr.co.prac.member.dto.MemberUpdateRequest;
 import kr.co.prac.member.entity.Member;
-import kr.co.prac.member.exception.AlreadyExistMember;
-import kr.co.prac.member.exception.MemberNotFound;
+import kr.co.prac.member.exception.AlreadyExistMemberException;
+import kr.co.prac.member.exception.MemberNotFoundException;
 import kr.co.prac.member.repository.MemberRepository;
 import kr.co.prac.member.service.MemberServiceImpl;
 
@@ -53,7 +53,7 @@ public class MemberIntegrationTest {
 		memberCreateRequest2.setName("memberB");
 		memberCreateRequest2.setEmail("abc@gmail.com");
 		
-		Assertions.assertThrows(AlreadyExistMember.class, () -> memberServiceImpl.apply(memberCreateRequest2));
+		Assertions.assertThrows(AlreadyExistMemberException.class, () -> memberServiceImpl.apply(memberCreateRequest2));
 	}	
 	
 	@Test
@@ -72,7 +72,7 @@ public class MemberIntegrationTest {
 	
 	@Test
 	void 없는회원조회() {
-		assertThrows(MemberNotFound.class, () -> memberServiceImpl.find(12345L));
+		assertThrows(MemberNotFoundException.class, () -> memberServiceImpl.find(12345L));
 	}
 	
 	@Test
@@ -92,7 +92,7 @@ public class MemberIntegrationTest {
 		assertThat(count).isEqualTo(allMembers.size());
 		
 	}
-	
+
 	@Test
 	void 삭제() {
 		MemberCreateRequest memberCreateRequest = new MemberCreateRequest();
@@ -102,13 +102,13 @@ public class MemberIntegrationTest {
 		
 		memberServiceImpl.delete(apply.getNumber());
 		
-		assertThrows(MemberNotFound.class, () -> memberServiceImpl.find(apply.getNumber()));
+		assertThrows(MemberNotFoundException.class, () -> memberServiceImpl.find(apply.getNumber()));
 		
 	}
 	
 	@Test
 	void 없는회원삭제() {
-		assertThrows(MemberNotFound.class, () -> memberServiceImpl.delete(32432L));
+		assertThrows(MemberNotFoundException.class, () -> memberServiceImpl.delete(32432L));
 	}
 	
 	@Test
