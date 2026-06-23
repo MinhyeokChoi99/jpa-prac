@@ -5,7 +5,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
@@ -21,6 +24,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
+    	log.error("unexpected error");
         return new ResponseEntity<>(
                 ErrorResponse.from(ErrorCode.INTERNAL_SERVER_ERROR),
                 ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus()

@@ -34,11 +34,11 @@ public class OrdersController {
 	
 	// 생성
 	@PostMapping("/orders")
-	public OrdersResponse createOrder(@RequestBody @Valid List<OrderCreateRequest> orderCreateRequest) {
+	public OrdersResponse createOrder(@RequestBody List<@Valid OrderCreateRequest> orderCreateRequest) {
 		return orderServiceImpl.createOrder(orderCreateRequest);
 	}
 	// 삭제
-	@DeleteMapping("/orders/{orderId}")
+	@PostMapping("/orders/{orderId}")
 	public void deleteOrder(@PathVariable Long orderId) {
 		orderServiceImpl.deleteOrders(orderId);
 	}
