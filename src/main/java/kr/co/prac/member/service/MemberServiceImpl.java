@@ -30,7 +30,7 @@ public class MemberServiceImpl implements MemberService{
 		Member member = new Member();
 		member.setName(memberCreateRequest.getName());
 		member.setEmail(memberCreateRequest.getEmail());
-		member.setRole(Role.ADMIN);
+		member.setRole(Role.USER);
 		Member savedMember = memberRepository.save(member);
 		return new MemberResponse(savedMember);
 	}

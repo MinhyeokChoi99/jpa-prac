@@ -3,6 +3,8 @@ package kr.co.prac.member.controller;
 import java.util.List;
 
 
+import jakarta.servlet.http.HttpServletRequest;
+import kr.co.prac.global.session.SessionUtil;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,43 +28,56 @@ import lombok.RequiredArgsConstructor;
 public class MemberController {
 
 
-	private final MemberService memberServiceImpl;
-	private final OrderService orderServiceImpl;
+	private final MemberService memberService;
+	private final OrderService orderService;
 	
 	@PostMapping
 	public MemberResponse apply(@RequestBody MemberCreateRequest mr) {
-		MemberResponse appliedMember = memberServiceImpl.apply(mr);
+		MemberResponse appliedMember = memberService.apply(mr);
 		return appliedMember;
 	}
 	
 	@GetMapping("/{number}")
 	public MemberResponse find(@PathVariable Long number) {
-		MemberResponse mr = memberServiceImpl.find(number);
+		MemberResponse mr = memberService.find(number);
 		return mr;
 	}
 	
 	@GetMapping
 	public List<MemberResponse> findAll() {
-		List<MemberResponse> members = memberServiceImpl.findAll();
+		List<MemberResponse> members = memberService.findAll();
 		return members;
 	}
 	
 	@PutMapping("/{number}")
 	public MemberResponse update(@PathVariable Long number, @RequestBody MemberUpdateRequest memberUpdateRequest) {
-		return memberServiceImpl.update(number, memberUpdateRequest);
+		return memberService.update(number, memberUpdateRequest);
 	}
 	
 	@DeleteMapping("/{number}")
 	public String delete(@PathVariable Long number) {
-		memberServiceImpl.delete(number);
+		memberService.delete(number);
 		return "성공";
 	}
 	
 	// 맴버기준조회
 	@GetMapping("/{memberId}/orders")
 	public List<OrdersResponse> orderByMemberId(@PathVariable Long memberId) {
-		List<OrdersResponse> memberIdFound = orderServiceImpl.memberIdFound(memberId);
+		List<OrdersResponse> memberIdFound = orderService.memberIdFound(memberId);
 		return memberIdFound;
+	}
+
+	@GetMapping("/me")
+	public MemberResponse me(HttpServletRequest httpServletRequest) {
+		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
+		return memberService.find(loginMemberId);
+	}
+
+	@GetMapping("/me/orders")
+	public List<OrdersResponse> memberOrderList(HttpServletRequest httpServletRequest) {
+		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
+		return orderService.memberIdFound(loginMemberId);
+
 	}
 	
 	
