@@ -7,15 +7,20 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import kr.co.prac.member.exception.MemberNotFound;
 import kr.co.prac.member.repository.MemberRepository;
 import kr.co.prac.orders.dto.OrderCreateRequest;
 import kr.co.prac.orders.dto.OrdersResponse;
 import kr.co.prac.orders.entity.OrderItem;
 import kr.co.prac.orders.entity.OrderStatus;
 import kr.co.prac.orders.entity.Orders;
+import kr.co.prac.orders.exception.AlreadyCancelledOrder;
+import kr.co.prac.orders.exception.EmptyItemOrder;
+import kr.co.prac.orders.exception.OrderNotFound;
 import kr.co.prac.orders.repository.OrderItemRepository;
 import kr.co.prac.orders.repository.OrdersRepository;
 import kr.co.prac.product.entity.Product;
+import kr.co.prac.product.exception.ProductNotFound;
 import kr.co.prac.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -35,16 +40,16 @@ public class OrderServiceImpl implements OrderService{
 	public OrdersResponse createOrder(List<OrderCreateRequest> orderCreateRequests) {
 		// 빈리스트로 요청이 들어왔을 경우 검증
 		if(orderCreateRequests == null || orderCreateRequests.isEmpty()) {
-			throw new IllegalArgumentException("상품X");
+			throw new EmptyItemOrder();
 		}
 		Orders order = new Orders();
-		order.setMember(memberRepository.findById(orderCreateRequests.get(0).getMemberId()).orElseThrow( () -> new IllegalArgumentException("존재하지않는 회원")));
+		order.setMember(memberRepository.findById(orderCreateRequests.get(0).getMemberId()).orElseThrow(MemberNotFound::new));
 		order.setOrderDate(LocalDateTime.now());
 		order.setStatus(OrderStatus.READY);
 		Orders savedOrder = ordersRepository.save(order);
 		
 		for(OrderCreateRequest orderCreateRequest : orderCreateRequests) {
-			Product product = productRepository.findById(orderCreateRequest.getProductNumber()).orElseThrow(()-> new IllegalArgumentException("존재하지않는 제품"));
+			Product product = productRepository.findById(orderCreateRequest.getProductNumber()).orElseThrow(ProductNotFound::new);
 			product.removeStock(orderCreateRequest.getCount());
 			
 			OrderItem orderItem = new OrderItem();
@@ -62,7 +67,7 @@ public class OrderServiceImpl implements OrderService{
 	@Override// 단건 조회
 	@Transactional(readOnly = true)
 	public OrdersResponse findOne(Long orderId) {
-		Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문"));
+		Orders order = ordersRepository.findById(orderId).orElseThrow(OrderNotFound::new);
 		OrdersResponse ordersResponse = new OrdersResponse(order);
 		return ordersResponse;
 		
@@ -82,9 +87,9 @@ public class OrderServiceImpl implements OrderService{
 
 	@Override// 삭제
 	public void deleteOrders(Long ordersId) {
-		Orders orders = ordersRepository.findById(ordersId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문"));
+		Orders orders = ordersRepository.findById(ordersId).orElseThrow(OrderNotFound::new);
 		if(orders.getStatus() == OrderStatus.CANCEL) {
-			throw new IllegalStateException("이미 취소된 상태");
+			throw new AlreadyCancelledOrder();
 		}
 		List<OrderItem> orderItems = orderItemRepository.findByOrdersNumber(ordersId);
 		for(OrderItem orderItem : orderItems) {		

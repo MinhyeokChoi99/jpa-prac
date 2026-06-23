@@ -22,7 +22,7 @@ public enum ErrorCode {
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"서버 내부의 오류가 발생했습니다"),
 	//존재하지 않는 상품을 주문하려고 할때
 	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다"),
-	// input을 잘못주었을때
+	// INPUT을 잘못주었을때
 	INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다");
 
 	private final HttpStatus httpStatus;

@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import kr.co.prac.member.dto.MemberCreateRequest;
 import kr.co.prac.member.dto.MemberResponse;
 import kr.co.prac.member.entity.Member;
+import kr.co.prac.member.exception.AlreadyExistMember;
 import kr.co.prac.member.repository.MemberRepository;
 import kr.co.prac.member.service.MemberServiceImpl;
 
@@ -56,7 +57,7 @@ public class MemberServiceTest {
 		memberCreateRequest.setEmail("abc@gmail.com");
 		
 		Mockito.when(memberRepository.existsByEmail(memberCreateRequest.getEmail())).thenReturn(true);
-		assertThrows(IllegalArgumentException.class, () -> memberServiceImpl.apply(memberCreateRequest));
+		assertThrows(AlreadyExistMember.class, () -> memberServiceImpl.apply(memberCreateRequest));
 	} // 다시보기
 	
 	@Test

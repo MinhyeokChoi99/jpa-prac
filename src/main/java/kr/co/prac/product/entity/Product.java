@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import kr.co.prac.global.entity.BaseTimeEntity;
+import kr.co.prac.product.exception.NotEnoughStock;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,7 +28,7 @@ public class Product extends BaseTimeEntity {
 	
 	public void removeStock(int quantity) {
 		if(this.stock - quantity < 0) {
-			throw new IllegalArgumentException("0미만 불가");
+			throw new NotEnoughStock();
 		}
 		this.stock -= quantity;
 	}

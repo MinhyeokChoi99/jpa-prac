@@ -3,7 +3,7 @@ package kr.co.prac.member.service;
 import java.util.List;
 
 import kr.co.prac.member.exception.AlreadyExistMember;
-import kr.co.prac.member.exception.MemberNotFoundException;
+import kr.co.prac.member.exception.MemberNotFound;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +36,7 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	@Transactional(readOnly = true)
 	public MemberResponse find(Long id) {
-		Member findMember = memberRepository.findById(id).orElseThrow(MemberNotFoundException::new);
+		Member findMember = memberRepository.findById(id).orElseThrow(MemberNotFound::new);
 		return new MemberResponse(findMember);
 	}
 
@@ -50,14 +50,14 @@ public class MemberServiceImpl implements MemberService{
 
 	@Override
 	public void delete(Long id) {
-		Member member = memberRepository.findById(id).orElseThrow(MemberNotFoundException::new);
+		Member member = memberRepository.findById(id).orElseThrow(MemberNotFound::new);
 		memberRepository.delete(member);
 		
 	}
 	
 	@Override
 	public MemberResponse update(Long id, MemberUpdateRequest memberUpdateRequest) {
-		Member member = memberRepository.findById(id).orElseThrow(MemberNotFoundException::new);
+		Member member = memberRepository.findById(id).orElseThrow(MemberNotFound::new);
 		if(memberUpdateRequest.getName() != null && !memberUpdateRequest.getName().equals("")) {
 			member.setName(memberUpdateRequest.getName());			
 		}
