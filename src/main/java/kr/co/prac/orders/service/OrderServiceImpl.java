@@ -37,13 +37,13 @@ public class OrderServiceImpl implements OrderService{
 
 	
 	@Override // 주문생성 -> 여러건 처리할수있게 수정
-	public OrdersResponse createOrder(List<OrderCreateRequest> orderCreateRequests) {
+	public OrdersResponse createOrder(Long memberId, List<OrderCreateRequest> orderCreateRequests) {
 		// 빈리스트로 요청이 들어왔을 경우 검증
 		if(orderCreateRequests == null || orderCreateRequests.isEmpty()) {
 			throw new EmptyItemOrderException();
 		}
 		Orders order = new Orders();
-		order.setMember(memberRepository.findById(orderCreateRequests.get(0).getMemberId()).orElseThrow(MemberNotFoundException::new));
+		order.setMember(memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new));
 		order.setOrderDate(LocalDateTime.now());
 		order.setStatus(OrderStatus.READY);
 		Orders savedOrder = ordersRepository.save(order);
