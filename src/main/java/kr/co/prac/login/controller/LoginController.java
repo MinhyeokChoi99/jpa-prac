@@ -39,7 +39,7 @@ public class LoginController {
 		loginService.logout(httpServletRequest);
 	}
 
-	@GetMapping("/me")
+	@GetMapping("/members/me")
 	public MemberResponse me(HttpServletRequest httpServletRequest) {
 		HttpSession session = httpServletRequest.getSession(false);
 		if(session == null) {

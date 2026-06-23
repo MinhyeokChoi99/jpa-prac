@@ -1,7 +1,6 @@
 package kr.co.prac.global.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import lombok.Getter;
 

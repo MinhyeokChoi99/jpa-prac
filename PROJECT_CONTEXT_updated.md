@@ -2,7 +2,7 @@
 
 # Project Context: jpa-prac
 
-_Last updated: 2026-06-23 (Asia/Seoul)_
+_Last updated: 2026-06-24 (Asia/Seoul)_
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@ _Last updated: 2026-06-23 (Asia/Seoul)_
 - Project name: `jpa-prac`
 - Main purpose: Java + Spring + MySQL practice project
 - Long-term purpose: Grow into a portfolio-level, production-minded Spring web application
-- Main domains: `member`, `product`, `orders`, `order_item`, and now basic `login`
+- Main domains: `member`, `product`, `orders`, `order_item`, and basic `login`
 - User language: Korean
 - Preferred assistant response style: Korean explanation + Java/Spring code examples + direct code review
 
@@ -73,6 +73,9 @@ Current implemented features include:
 - Global exception handling with `BusinessException`, `ErrorCode`, and `ErrorResponse`
 - JPA auditing with `BaseTimeEntity`
 - Basic custom session-based login and logout
+- Login request validation with `@NotBlank`, `@Email`, and `@Valid`
+- Current logged-in member lookup endpoint: `GET /members/me`
+- Login-required exception flow using `ErrorCode.LOGIN_REQUIRED` and `LoginRequiredException`
 
 ---
 
@@ -85,19 +88,21 @@ Current endpoints:
 ```text
 POST /members/login
 POST /members/logout
+GET  /members/me
 ```
 
 Current login flow:
 
 ```text
 1. Client sends email/password to POST /members/login.
-2. LoginService finds Member by email.
-3. LoginService compares request password with DB password.
-4. If valid, LoginResponse is created from Member.
-5. Controller creates/retrieves HttpSession.
-6. Controller stores member id in session using SessionConst.LOGIN_MEMBER_ID.
-7. Browser receives JSESSIONID cookie from the server.
-8. Later requests can be associated with the same session through JSESSIONID.
+2. LoginRequest is validated with Bean Validation.
+3. LoginService finds Member by email.
+4. LoginService compares request password with DB password.
+5. If valid, LoginResponse is created from Member.
+6. Controller creates/retrieves HttpSession.
+7. Controller stores member id in session using SessionConst.LOGIN_MEMBER_ID.
+8. Browser receives JSESSIONID cookie from the server.
+9. Later requests can be associated with the same session through JSESSIONID.
 ```
 
 Current logout flow:
@@ -107,6 +112,18 @@ Current logout flow:
 2. LoginService calls request.getSession(false).
 3. If an existing session exists, it is invalidated.
 4. The login state for that browser session is removed.
+```
+
+Current `/members/me` flow:
+
+```text
+1. Client sends GET /members/me.
+2. Controller calls request.getSession(false).
+3. If no session exists, LoginRequiredException is thrown.
+4. Controller reads SessionConst.LOGIN_MEMBER_ID from session.
+5. If no login member id exists, LoginRequiredException is thrown.
+6. MemberService finds the current member by id.
+7. Controller returns MemberResponse.
 ```
 
 Current session key:
@@ -119,16 +136,18 @@ Current design decisions:
 
 - `SessionConst` is placed in `kr.co.prac.global.session`.
 - `LoginResponse.memberId` exists for server-side session storage but is hidden from JSON response with `@JsonIgnore`.
-- `ErrorCode.INVALID_PASSWORD` now uses `HttpStatus.UNAUTHORIZED`.
+- `ErrorCode.INVALID_PASSWORD` uses `HttpStatus.UNAUTHORIZED`.
+- `ErrorCode.LOGIN_REQUIRED` uses `HttpStatus.UNAUTHORIZED`.
 - `InvalidPasswordException` delegates to `ErrorCode.INVALID_PASSWORD`.
+- `LoginRequiredException` delegates to `ErrorCode.LOGIN_REQUIRED`.
 - Login currently uses plain password comparison as a learning-stage implementation.
+- `GET /members/me` is used instead of `GET /me` for now to keep beginner-stage API naming consistent with existing member endpoints.
 
 Confirmed remaining cleanup:
 
-- `LoginServiceImpl` still has an unused `MemberService` import. Remove it.
-- `LoginRequest` still needs validation annotations such as `@NotBlank` and `@Email`.
 - Password comparison should later be replaced with `PasswordEncoder.matches()`.
 - `data.sql` role values are now quoted; password seed values should also preferably be single-quoted strings.
+- Repeated session member-id lookup logic should later be moved into a reusable helper, argument resolver, interceptor, or Spring Security principal depending on the next authentication step.
 
 ---
 
@@ -183,6 +202,7 @@ GET    /members/{memberId}/orders
 
 POST   /members/login
 POST   /members/logout
+GET    /members/me
 
 GET    /products
 
@@ -198,11 +218,17 @@ Recommended future API direction:
 POST   /members/signup or POST /auth/signup
 POST   /members/login
 POST   /members/logout
-GET    /members/me or GET /me
+GET    /members/me
 GET    /members/me/orders or GET /me/orders
 
 POST   /orders/{orderId}/cancel
 ```
+
+Important API direction after login:
+
+- For user-specific APIs, avoid trusting `memberId` from the URL or request body.
+- Prefer deriving the current user from the session.
+- Example: prefer `GET /members/me/orders` over `GET /members/{memberId}/orders` for logged-in user order lookup.
 
 ---
 
@@ -235,6 +261,8 @@ Architecture guidance:
 - Keep business rules in services/domain methods.
 - Keep session/request handling near the web layer while learning session mechanics.
 - Use DTOs instead of exposing entities.
+- Use service interfaces in controllers where available instead of directly depending on implementation classes.
+- Do not introduce large package restructuring in the same commit as a small feature.
 
 ---
 
@@ -253,7 +281,7 @@ Detailed order:
 2. JSESSIONID cookie behavior.
 3. Logout with session.invalidate().
 4. Session timeout.
-5. Current logged-in user endpoint.
+5. Current logged-in user endpoint. [DONE: GET /members/me]
 6. Use session identity in business APIs.
 7. Multi-server session limitation.
 8. Redis Session comparison.
@@ -270,15 +298,21 @@ Do not recommend direct JWT-first implementation unless the user explicitly chan
 Current best next feature:
 
 ```text
+Use session identity in member-specific APIs
+```
+
+The current logged-in member endpoint has now been added:
+
+```text
 GET /members/me
 ```
 
-Purpose:
+Purpose already achieved:
 
 - Confirm that session login works across multiple requests.
 - Retrieve `SessionConst.LOGIN_MEMBER_ID` from session.
 - Load the current `Member` from DB.
-- Return the current logged-in member as a DTO.
+- Return the current logged-in member as `MemberResponse`.
 
 Expected flow:
 
@@ -289,19 +323,23 @@ JSESSIONID -> HttpSession -> login_member_id -> MemberRepository.findById(...) -
 Recommended next order:
 
 ```text
-1. Remove tiny remaining cleanup issues.
-2. Add LoginRequest validation.
-3. Add /members/me.
-4. Add tests for login/logout/me.
-5. Add password encoding.
+1. Manually verify login -> /members/me -> logout -> /members/me flow.
+2. Convert user-specific APIs to use session identity instead of trusting client-provided member id.
+3. Consider GET /members/me/orders or GET /me/orders.
+4. Add password encoding with BCrypt.
+5. Add tests later as a separate learning block.
 6. Then consider Spring Security session login.
 ```
+
+Testing is intentionally postponed for now because the user wants to learn tests later in one focused block.
 
 ---
 
 ## 10. Testing Roadmap
 
-Recommended tests now:
+Testing is postponed for now.
+
+When the user starts the testing block, recommended tests include:
 
 - Login success with correct email/password.
 - Login failure when member does not exist.
@@ -311,6 +349,9 @@ Recommended tests now:
 - Logout without session does not create a new session.
 - `/members/me` returns current member when session exists.
 - `/members/me` returns unauthorized error when session does not exist.
+- `/members/me` returns unauthorized error after logout.
+
+Do not force tests into the current small feature/refactoring steps unless the user asks.
 
 ---
 
@@ -338,7 +379,7 @@ Recommended tests now:
 - Keep business rules in service/domain methods.
 - Avoid entity exposure.
 - Use DTOs.
-- Add tests when fixing bugs or adding features.
+- Add tests when fixing bugs or adding features, but respect the current learning decision to postpone testing.
 
 ---
 
@@ -353,7 +394,9 @@ When the user asks about this project:
 5. Review code with production-readiness and portfolio-readiness in mind.
 6. Recommend incremental changes instead of large rewrites.
 7. For authentication, follow `Session first -> JWT later`.
-8. The immediate authentication next step is likely `/members/me`.
+8. `/members/me` is now implemented.
+9. The immediate next authentication/business step is likely using session identity in member-specific APIs, especially current-user order lookup.
+10. Do not recommend tests immediately unless the user asks; the user wants to learn tests later in one focused block.
 
 ---
 
@@ -367,8 +410,10 @@ When more precision is needed, check latest GitHub source code, especially:
 - `LoginResponse`
 - `SessionConst`
 - `Member` entity
+- `MemberService`
 - `ErrorCode`
+- `LoginRequiredException`
 - `GlobalExceptionHandler`
 - `data.sql`
 - local run logs
-- test output
+- test output when testing starts
