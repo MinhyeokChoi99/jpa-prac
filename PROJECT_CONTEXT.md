@@ -6,45 +6,38 @@
 
 - Repository: `https://github.com/MinhyeokChoi99/jpa-prac`
 - Project name: `jpa-prac`
-- Current purpose: Java + Spring + MySQL practice project
-- Long-term purpose: Build and deploy a web application that feels close to a real commercial service
-- Main domain: Product, member, order, and order item management
+- Main package: `kr.co.prac`
+- Current purpose: Java + Spring Boot + JPA + MySQL practice project
+- Long-term purpose: Grow into a portfolio-level and production-minded Spring web application
+- Main domains: `member`, `product`, `orders`, `orderItem`
 - User language: Korean
-- Preferred assistant response style: Korean explanation + Java/Spring code examples
-- Documentation language: English is acceptable and preferred for technical reuse
+- Preferred explanation style: Korean, step-by-step, concept-first, with Java/Spring code examples
+- Documentation language: English is acceptable for technical reuse
 
-This project is not just a simple CRUD exercise. It is intended to grow gradually into a portfolio-level and production-minded Spring web application.
-
-The user wants to study Java and Spring by building, reviewing, refactoring, and extending this project step by step.
+This project is not a simple CRUD-only exercise. It is being built gradually to understand Spring MVC, JPA, transaction boundaries, exception handling, validation, authentication, authorization, and later deployment-oriented backend concerns.
 
 ---
 
-## 2. User Intent
+## 2. User Intent and Assistance Style
 
-The user is learning Java and Spring with the goal of eventually building a deployable web service.
+The user wants to learn by implementing and then reviewing code. When helping with this project:
 
-When assisting with this project, do not only provide working code. Explain:
+- Check the latest GitHub project state when code review is requested.
+- Explain not only *what code to write*, but *why the structure exists*.
+- Distinguish between compile/runtime correctness, Spring convention, maintainability, and production-readiness.
+- Avoid jumping too far ahead before the user understands the current layer.
+- Give direct feedback when code is wrong, but explain the exact reason.
+- Prefer Korean explanations with concrete project-specific examples.
 
-- Why a certain structure is used
-- Whether the code follows modern Spring best practices
-- Whether the implementation may cause performance, maintainability, or production issues
-- How to refactor the code gradually
-- What should be fixed now versus what can be improved later
-- What the next feature should be and why
+The user is currently focused on building backend fundamentals in this order:
 
-The user wants feedback on:
-
-- Outdated coding style
-- Poor performance patterns
-- Better Spring/JPA practices
-- Architecture improvements
-- Feature roadmap
-- Portfolio-readiness
-- Production-readiness
+```text
+JPA/domain structure -> DTO/API -> exception handling -> validation -> session login -> JWT later
+```
 
 ---
 
-## 3. Current Confirmed Tech Stack
+## 3. Confirmed / Expected Tech Stack
 
 Current stack:
 
@@ -52,287 +45,184 @@ Current stack:
 - Spring Boot
 - Spring Web MVC
 - Spring Data JPA
-- Spring Data JDBC
+- Spring Data JDBC dependency appears in stack
 - Bean Validation
-- MySQL
-- H2 for tests
+- MySQL runtime DB
+- H2 test DB in MySQL compatibility mode
 - Lombok
 - Springdoc OpenAPI / Swagger
-- Maven
+- Maven / Maven Wrapper
 
-Primary runtime database:
-
-- MySQL
-
-Test database:
-
-- H2 in MySQL compatibility mode
-
-Potential future stack to study and add:
+Potential future stack:
 
 - Spring Security
-- Session-based login or JWT authentication
+- HttpSession + cookie-based login
+- JWT authentication after session flow is understood
 - Spring Boot profiles
 - Flyway or Liquibase
+- Redis / Spring Session Redis
 - QueryDSL
-- Redis
 - Docker
 - GitHub Actions
 - Testcontainers
-- AWS, NCP, or another cloud platform
+- Cloud deployment
 - Nginx
 - Monitoring/logging tools
 
 ---
 
-## 4. Current Known Repository State
+## 4. Current Repository State Summary
 
-The current repository appears to include the following domains:
-
-- Member
-- Product
-- Orders
-- OrderItem
-
-Current GitHub-verified package state after the package-structure refactor:
+Current domains:
 
 ```text
-src/main/java/kr/co/prac
-├── PracApplication.java
-├── member
-│   ├── controller
-│   ├── dto
-│   ├── entity
-│   ├── repository
-│   └── service
-├── product
-│   ├── controller
-│   ├── dto
-│   ├── entity
-│   ├── repository
-│   └── service
-└── orders
-    ├── controller
-    ├── dto
-    ├── entity
-    ├── repository
-    └── service
+member
+product
+orders
+orderItem
 ```
 
-Important confirmed details:
+Current implemented directions:
 
-- Main application class remains in `kr.co.prac.PracApplication`.
-- `Member` is now in `kr.co.prac.member.entity`.
-- `Product` is now in `kr.co.prac.product.entity`.
-- `Orders` and `OrderItem` are now in `kr.co.prac.orders.entity`.
-- `MemberRepository`, `ProductRepository`, `OrdersRepository`, and `OrderItemRepository` are inside their corresponding domain packages.
-- `MemberController`, `ProductController`, and `OrdersController` are inside their corresponding domain packages.
-- `OrderStatus` is currently located in `kr.co.prac.orders.dto`; this works technically but should be moved to `kr.co.prac.orders.entity` because it represents order domain state, not request/response data.
-- A `global` package has not yet been confirmed in the repository. Global exception handling remains a next stabilization task.
-- The project currently uses `orders` as the package name instead of the previously suggested singular `order`. This is acceptable if used consistently, especially because the entity is named `Orders`. Avoid mixing both `order` and `orders` packages.
+- Feature-based package structure exists.
+- JPA auditing timestamps exist through `BaseTimeEntity`.
+- `GlobalExceptionHandler` exists.
+- `ErrorCode`, `ErrorResponse`, and `BusinessException` exist.
+- Domain-specific custom exceptions exist.
+- Custom exception class names now use the `Exception` suffix.
+- `MethodArgumentNotValidException` handling exists.
+- Order creation uses validation on list elements with `List<@Valid OrderCreateRequest>`.
+- Product stock decreases when an order is created.
+- Product stock is restored when an order is cancelled.
 
-The current project appears to include:
+Current caution:
 
-- Member CRUD
-- Product list API
-- Order list API
-- Order detail API
-- Order creation API
-- Order cancellation logic
-- Member-specific order lookup
-- Basic DTO separation
-- Basic validation for order creation
-- Product stock decrease on order creation
-- Product stock restore on order cancellation
-- Static HTML page that calls backend APIs
-- MySQL runtime configuration
-- H2 test configuration
-- Some unit/integration tests for member-related logic
+- Real Maven build/test could not be verified inside the assistant runtime because direct GitHub clone and Maven execution were limited by environment constraints.
+- User should run local build/test and provide output if errors occur.
 
-Seed data currently includes:
+Recommended local commands:
 
-- Products
-- Members
-- Orders
-- Order items
+```bash
+./mvnw clean test
+./mvnw clean package
+```
 
-The project is already beyond a pure CRUD toy example because it contains basic business behavior around orders and stock.
+Windows PowerShell:
+
+```powershell
+./mvnw.cmd clean test
+./mvnw.cmd clean package
+```
+
+---
 
 ## 5. Current Domain Understanding
 
 ### Member
 
-A member represents a user/customer-like entity.
+Member represents a user/customer-like entity.
 
-Known or expected fields:
+Current/future meaning:
 
-- number
-- name
-- email
+- Current member domain handles member data.
+- Member will become the authentication subject later.
+- Email should be treated as a login identifier.
+- Password should be added when signup/login starts.
+- Role should be added when authorization starts.
 
-Current member-related features appear to include:
+Future fields likely needed:
 
-- Create member
-- Find member by ID
-- Find all members
-- Update member
-- Delete member
-- Find orders by member
+```text
+id / number
+name
+email
+password
+role
+createdAt
+updatedAt
+```
 
-Important future direction:
+Future member-related APIs may include:
 
-- Member should eventually become the authentication subject.
-- Email should probably become a unique login identifier.
-- Password should be added only when Spring Security is introduced.
-- Member roles should be added later, such as `USER` and `ADMIN`.
+```text
+POST /members/signup or POST /auth/signup
+POST /members/login or POST /auth/login
+POST /members/logout or POST /auth/logout
+GET  /members/me or GET /me
+```
 
 ---
 
 ### Product
 
-A product represents an item that can be ordered.
+Product represents an item that can be ordered.
 
-Known or expected fields:
-
-- number
-- name
-- price
-- stock
-
-Current product behavior appears to include:
+Known/expected behavior:
 
 - Product list retrieval
-- Stock decrease
-- Stock increase
-- Stock validation when order quantity exceeds available stock
+- Stock decrease during order creation
+- Stock increase during order cancellation
+- Not enough stock exception when requested count exceeds stock
+- Product not found exception when order references missing product
 
-Important future direction:
+Future direction:
 
-- Add full product CRUD for admin use.
-- Add product detail API.
-- Add product search/filtering.
-- Add product category.
-- Add product image support later.
-- Prevent direct arbitrary stock mutation from controllers.
+- Admin product CRUD
+- Product detail API
+- Product search/filtering
+- Category
+- Image support later
+- Safer stock mutation through domain methods only
 
 ---
 
 ### Orders
 
-An order represents a purchase/order transaction.
+Orders represents a purchase/order transaction.
 
-Known or expected fields:
-
-- number
-- member
-- orderDate
-- status
-
-Current order behavior appears to include:
+Known/expected behavior:
 
 - Order list retrieval
 - Order detail retrieval
 - Order creation
 - Order cancellation
 - Member-specific order lookup
+- Status transition validation
 
-Important future direction:
+Current improvement target:
 
-- Use clearer order status transition rules.
-- Prevent invalid status changes.
-- Separate order creation request into a wrapper DTO.
-- Return order items in order detail response.
-- Add order total price.
-- Add payment-ready/payment-completed concepts later.
+```text
+Current cancellation endpoint may be ambiguous.
+Recommended endpoint: POST /orders/{orderId}/cancel
+```
+
+Reason:
+
+```text
+Cancelling an order is a domain state transition, not physical deletion.
+```
 
 ---
 
 ### OrderItem
 
-An order item connects an order with a product.
+OrderItem connects an order with a product.
 
-Known or expected fields:
+Known/expected behavior:
 
-- order
-- product
-- orderPrice
-- count
+- Created when order is created
+- Contains product reference, order price, and count
+- Participates in stock calculation and order details
 
-Current behavior appears to include:
+Future direction:
 
-- Create order item when an order is created
-- Restore product stock when an order is cancelled
-
-Important future direction:
-
-- Add bidirectional convenience methods only if needed.
-- Avoid exposing entity graph directly in API responses.
-- Use DTOs for order item response.
-- Be careful with lazy loading and N+1 queries.
+- Avoid exposing entity graph directly
+- Use response DTOs
+- Watch for lazy loading and N+1 problems
 
 ---
 
-## 6. Current API Direction
-
-Current or expected API shape:
-
-```text
-GET    /members
-POST   /members
-GET    /members/{memberId}
-PUT    /members/{memberId}
-DELETE /members/{memberId}
-GET    /members/{memberId}/orders
-
-GET    /products
-
-GET    /orders
-GET    /orders/{orderId}
-POST   /orders
-DELETE /orders/{orderId}
-```
-
-This API design is already moving in a REST-like direction.
-
-Recommended future API direction:
-
-```text
-POST   /auth/signup
-POST   /auth/login
-POST   /auth/logout
-GET    /me
-
-GET    /products
-GET    /products/{productId}
-POST   /admin/products
-PUT    /admin/products/{productId}
-DELETE /admin/products/{productId}
-
-POST   /orders
-GET    /orders
-GET    /orders/{orderId}
-POST   /orders/{orderId}/cancel
-```
-
-For production-style APIs, prefer action endpoints only when the action is a domain command, such as order cancellation.
-
-Example:
-
-```text
-POST /orders/{orderId}/cancel
-```
-
-is usually clearer than:
-
-```text
-DELETE /orders/{orderId}
-```
-
-because cancelling an order is not the same as deleting order history.
-
----
-
-## 7. Current Architecture
+## 6. Current Architecture
 
 Current architecture follows layered architecture inside feature-based packages:
 
@@ -346,97 +236,227 @@ Repository
 Entity / Database
 ```
 
-Current GitHub-verified package direction:
+Current package direction:
 
 ```text
 kr.co.prac
+├── global
+│   ├── config
+│   ├── entity
+│   └── exception
 ├── member
 │   ├── controller
 │   ├── service
 │   ├── repository
 │   ├── entity
-│   └── dto
+│   ├── dto
+│   └── exception
 ├── product
 │   ├── controller
 │   ├── service
 │   ├── repository
 │   ├── entity
-│   └── dto
+│   ├── dto
+│   └── exception
 ├── orders
 │   ├── controller
 │   ├── service
 │   ├── repository
 │   ├── entity
-│   └── dto
+│   ├── dto
+│   └── exception
 └── PracApplication.java
 ```
 
-Recommended next package additions:
+Recommended future additions:
 
 ```text
 kr.co.prac
-├── global
-│   ├── exception
-│   ├── response
-│   └── config
-└── auth
-    ├── controller
-    ├── service
-    ├── dto
-    └── security
+├── auth
+│   ├── controller
+│   ├── service
+│   ├── dto
+│   └── security
+└── global
+    ├── response
+    └── security/config if needed
 ```
 
-Current assessment:
+---
 
-- The feature-based package refactor has mostly been completed for `member`, `product`, and `orders`.
-- The main remaining structure issue is that `OrderStatus` should move from `orders.dto` to `orders.entity`.
-- The `global` package should be introduced next for exception handling and response/error format classes.
-- The `auth` package should be added later when signup/login implementation starts.
+## 7. Exception Handling Status
 
-Recommendation:
+Exception handling is mostly stabilized.
 
-As the project grows, feature-based packages are cleaner than layer-only packages. The current direction is appropriate. Keep package names lowercase and avoid mixed structures such as having both `order` and `orders` packages.
+Current global exception structure:
 
-## 8. Current Code Review Priorities
+```text
+global.exception
+├── ErrorCode.java
+├── ErrorResponse.java
+├── BusinessException.java
+└── GlobalExceptionHandler.java
+```
 
-When reviewing this project, classify feedback into three levels.
+Current intended flow:
+
+```text
+Domain/service detects business failure
+→ throw DomainSpecificException
+→ DomainSpecificException extends BusinessException
+→ BusinessException holds ErrorCode
+→ GlobalExceptionHandler catches BusinessException
+→ ErrorResponse returned with ErrorCode status/code/message
+```
+
+Current domain-specific exception naming is now conventionally clearer, using the `Exception` suffix:
+
+```text
+member.exception
+├── MemberNotFoundException
+└── AlreadyExistMemberException
+
+product.exception
+├── ProductNotFoundException
+└── NotEnoughStockException
+
+orders.exception
+├── EmptyItemOrderException
+├── OrderNotFoundException
+└── AlreadyCancelledOrderException
+```
+
+Current known improvement:
+
+- Generic fallback logging should preserve stack trace.
+- Prefer:
+
+```java
+log.error("Unexpected exception occurred", e);
+```
+
+instead of only logging a plain message.
+
+Validation handling exists, but later it can be improved with field-level error details.
+
+---
+
+## 8. Validation Direction
+
+Current validation direction:
+
+- `MethodArgumentNotValidException` is handled globally.
+- `INVALID_INPUT_VALUE` exists in `ErrorCode`.
+- Order creation request uses list element validation.
+
+Future validation response improvement:
+
+Current simple response is acceptable now:
+
+```json
+{
+  "status": 400,
+  "code": "INVALID_INPUT_VALUE",
+  "message": "잘못된 입력값입니다."
+}
+```
+
+Later, field-level details may be added:
+
+```json
+{
+  "status": 400,
+  "code": "INVALID_INPUT_VALUE",
+  "message": "잘못된 입력값입니다.",
+  "errors": [
+    { "field": "email", "message": "must not be blank" }
+  ]
+}
+```
+
+Do not overcomplicate validation response until the basic API and auth flow are stable.
+
+---
+
+## 9. Git Workflow Notes
+
+The user recently studied Git fetch/pull/merge/push.
+
+Core mental model:
+
+```text
+fetch = update remote-tracking information only
+pull = fetch + merge/rebase into current local branch
+push = upload local commits to remote
+merge = merge another branch into current branch
+Pull Request = GitHub workflow to merge one branch into another, usually feature branch into main
+```
+
+For pull:
+
+```text
+current local branch ← origin/<specified branch>
+```
+
+Example:
+
+```bash
+git switch branch1
+git pull origin main
+```
+
+means:
+
+```text
+branch1 ← origin/main
+```
+
+It does not mean switching to `main`.
+
+Safe update routine:
+
+```bash
+git status
+git fetch origin
+git branch -vv
+git pull
+```
+
+If local changes exist, commit or stash before pulling.
+
+---
+
+## 10. Current Code Review Priorities
 
 ### Critical
 
-Issues that may cause runtime errors, wrong data, security problems, or production failure.
+Issues that may cause runtime errors, data inconsistency, security problems, or production failure:
 
-Examples:
-
-- Hardcoded database credentials
+- Unsafe authentication logic
+- Plaintext password storage once auth starts
 - Missing transaction boundary
 - Incorrect stock handling
 - Exposing sensitive user data
-- Unsafe authentication logic
 - Incorrect JPA relationship mapping
 - Data loss caused by `ddl-auto=create`
 - Missing validation for important requests
 
 ### Important
 
-Issues that affect maintainability, scalability, or backend conventions.
+Issues that affect maintainability, scalability, or backend conventions:
 
-Examples:
-
-- Package naming convention
-- Entity exposed directly to API
-- Missing global exception handler
 - Inconsistent API response format
+- Missing field-level validation error response
 - Service methods doing too many things
 - No pagination for list APIs
-- Possible N+1 query problem
+- Possible N+1 query problems
 - Weak test coverage
-- Using `DELETE` for order cancellation
+- Ambiguous order cancellation endpoint
+- Logging unexpected exceptions without stack trace
 
 ### Optional
 
-Issues that are useful but not urgent.
-
-Examples:
+Useful but not urgent:
 
 - More detailed Swagger documentation
 - Custom response wrapper
@@ -449,471 +469,311 @@ Examples:
 
 ---
 
-## 9. Immediate Refactoring Recommendations
+## 11. Immediate Next Tasks Before Authentication
 
-Before adding many new features, prioritize these improvements.
-
-### 1. Separate environment configuration
-
-Current local database settings should not be treated as production settings.
-
-Recommended files:
+Before starting authentication, recommended cleanup:
 
 ```text
-application.yml
-application-local.yml
-application-test.yml
-application-prod.yml
+1. Run local ./mvnw clean test and ./mvnw clean package.
+2. Improve fallback exception logging with stack trace.
+3. Improve order cancellation endpoint later: POST /orders/{orderId}/cancel.
+4. Separate application profiles later.
+5. Add focused tests for exception and order behavior.
 ```
 
-Local example:
+Recommended tests before auth:
+
+```text
+- Member duplicate email exception
+- Member not found exception
+- Product not found exception
+- Not enough stock exception
+- Empty order request exception
+- Order cancellation stock restoration
+- Already cancelled order exception
+- Validation failure response
+```
+
+---
+
+## 12. Authentication Roadmap: Session First, JWT Later
+
+The user has decided to learn and implement authentication in this order:
+
+```text
+1단계: 기본 HttpSession으로 로그인 흐름 이해
+2단계: session timeout, cookie, logout 이해
+3단계: multi-server 문제 이해
+4단계: Redis Session 또는 JWT 비교
+```
+
+Final decision:
+
+```text
+Session first → JWT later
+```
+
+Do not jump directly to JWT before the user understands cookie-based server sessions and their scaling limitations.
+
+Spring Security may be introduced during the session stage, but explanations must connect Spring Security behavior to:
+
+```text
+HttpSession
+JSESSIONID
+SecurityContext
+Authentication
+cookie behavior
+session timeout
+logout
+```
+
+---
+
+### Stage 1: Basic `HttpSession` Login Flow
+
+Goal: understand how server-side login state works.
+
+Concepts:
+
+```text
+HttpSession
+JSESSIONID cookie
+server-side session storage
+login success flow
+login-required endpoint flow
+where login state is stored
+```
+
+Basic mental model:
+
+```text
+Browser cookie:
+JSESSIONID=abc123
+
+Server session store:
+abc123 -> LOGIN_MEMBER_ID = 1
+```
+
+If Spring Security is used:
+
+```text
+Browser cookie:
+JSESSIONID=abc123
+
+Server session store:
+abc123 -> SPRING_SECURITY_CONTEXT -> Authentication -> Principal/UserDetails
+```
+
+Implementation direction:
+
+```text
+1. Add password to Member.
+2. Add signup request DTO.
+3. Add login request DTO.
+4. Signup stores encoded password.
+5. Login verifies email/password.
+6. On login success, create HttpSession or SecurityContext.
+7. Add /members/me or /me endpoint.
+```
+
+---
+
+### Stage 2: Session Timeout, Cookie, and Logout
+
+Goal: understand how session lifetime and cookie behavior affect login state.
+
+Concepts:
+
+```text
+server session timeout
+browser session cookie
+JSESSIONID
+HttpOnly
+Secure
+SameSite
+session.invalidate()
+logout cookie deletion
+```
+
+Recommended configuration example:
 
 ```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/prac?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+server:
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        name: JSESSIONID
+        http-only: true
+        same-site: lax
 ```
 
-### 2. Stop relying on `ddl-auto=create` for long-term development
-
-Use `create` only while learning or resetting local data.
-
-Later direction:
-
-```yaml
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: validate
-```
-
-Then use Flyway or Liquibase for schema migration.
-
-### 3. Add global exception handling
-
-Create a consistent error response instead of returning raw exceptions.
-
-Recommended classes:
+Important distinction:
 
 ```text
-global/exception/GlobalExceptionHandler.java
-global/exception/ErrorResponse.java
+Cookie timeout controls how long the browser keeps the cookie.
+Server session timeout controls how long the server keeps the login state.
 ```
 
-### 4. Standardize API responses
+In the basic session model, the cookie does not store member information. It only stores the session id.
 
-At minimum, decide whether APIs return:
+---
 
-```json
-{
-  "data": {},
-  "message": "success"
-}
-```
+### Stage 3: Multi-server Session Problem
 
-or return raw DTOs directly.
+Goal: understand why default in-memory sessions become problematic when there are multiple Tomcat/application servers.
 
-For a beginner project, raw DTOs are acceptable. For portfolio/production direction, a consistent response format is better.
-
-### 5. Continue package cleanup after the feature-based refactor
-
-The repository has moved toward feature-based packages:
+Problem model:
 
 ```text
-member / product / orders
-```
+Login request -> Tomcat A
+Tomcat A memory: abc123 -> memberId=1
 
-Next cleanup items:
+Next request -> Tomcat B
+Tomcat B memory: no abc123 session
 
-- Keep the current `orders` package name consistently, or later rename it to `order` in a separate refactor if desired.
-- Move `OrderStatus` from `orders.dto` to `orders.entity`.
-- Add `global.exception`, `global.response`, and `global.config` when global exception/config work begins.
-- Add `auth` only when signup/login work begins.
-
-Java package names should stay lowercase.
-
-Prefer:
-
-```text
-member/service
-product/service
-orders/service
-global/exception
-```
-
-Avoid mixed-case package names such as:
-
-```text
-productService
-memberService
-orderService
-```
-
-### 6. Replace order deletion with order cancellation command
-
-Business-wise, cancelling an order should preserve order history.
-
-Recommended endpoint:
-
-```text
-POST /orders/{orderId}/cancel
-```
-
-Service method:
-
-```java
-@Transactional
-public OrderResponse cancelOrder(Long orderId) {
-    Orders order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new OrderNotFoundException(orderId));
-
-    order.cancel();
-
-    return OrderResponse.from(order);
-}
-```
-
-## 10. Recommended Next Feature: Login
-
-The user is considering login as the next feature. This is a good direction, but it should be added in stages.
-
-### Login Stage 1: Member signup
-
-Add:
-
-```text
-POST /auth/signup
+Result: user may appear logged out.
 ```
 
 Concepts:
 
-- Signup request DTO
-- Password encoding
-- Duplicate email validation
-- Member role
-- Validation
-
-Required dependency:
-
-```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-security</artifactId>
-</dependency>
+```text
+in-memory session limitation
+load balancer
+sticky session
+session replication
+external session store
+why server-local session storage does not scale cleanly
 ```
 
-### Login Stage 2: Session-based login
+---
 
-Start with session login before JWT if the user is still learning Spring Security.
+### Stage 4: Redis Session or JWT Comparison
 
-Why:
+Goal: compare common ways to handle authentication after the basic session model is understood.
 
-- Easier to understand
-- Closer to traditional web login
-- Good for learning authentication flow
-- Less token complexity
+#### Redis-backed session
 
-### Login Stage 3: Authorization
+Redis is useful because session data is short-lived key-value state.
 
-Add roles:
+```text
+Browser cookie:
+JSESSIONID=abc123
 
-```java
-public enum Role {
-    USER,
-    ADMIN
-}
+Redis:
+abc123 -> memberId=1, TTL=30m
+
+Tomcat A and Tomcat B both read Redis.
 ```
 
-Example rule:
+Why Redis instead of RDBMS for session:
 
-- Normal users can create and view their own orders.
-- Admin users can create/update/delete products.
-- Admin users can view all orders.
+```text
+Session lookup is key-value based.
+Session data is temporary.
+TTL expiration is natural in Redis.
+Redis keeps session I/O separate from core business RDBMS load.
+RDBMS session is possible, but generally heavier for frequent session read/write traffic.
+```
 
-### Login Stage 4: JWT
+#### JWT
 
-Add JWT only after basic Spring Security flow is understood.
+JWT should be studied after sessions.
 
-JWT is useful for stateless REST APIs and frontend/backend separation, but it adds more complexity.
+Mental model:
 
----
+```text
+Session:
+Server remembers login state.
+Client stores only session id.
 
-## 11. Recommended Feature Roadmap
+JWT:
+Client stores signed token.
+Server validates token instead of looking up server-side session state for every request.
+```
 
-### Phase 0: Stabilization
+JWT topics to study later:
 
-Goal: Make the existing project cleaner before adding large features.
-
-Tasks:
-
-- Clean package structure
-- Add global exception handling
-- Add error response DTO
-- Clean application profiles
-- Remove hardcoded DB password
-- Remove duplicated dependencies
-- Add README
-- Add this `PROJECT_CONTEXT.md`
-
-### Phase 1: Member and Authentication
-
-Goal: Turn `Member` into a real user account.
-
-Tasks:
-
-- Add password field
-- Add password encoder
-- Add signup
-- Add login
-- Add logout
-- Add role
-- Add current user API: `GET /me`
-
-### Phase 2: Product Management
-
-Goal: Make product management realistic.
-
-Tasks:
-
-- Product create/update/delete APIs
-- Product detail API
-- Product search
-- Product pagination
-- Product category
-- Admin-only product management
-
-### Phase 3: Order Flow
-
-Goal: Make orders closer to a real service.
-
-Tasks:
-
-- Create order from multiple order items
-- Validate stock
-- Calculate total price
-- Cancel order
-- Restore stock on cancellation
-- Prevent duplicate cancellation
-- View my orders
-- View order detail with order items
-
-### Phase 4: Cart
-
-Goal: Add a common e-commerce feature.
-
-Tasks:
-
-- Add cart
-- Add cart item
-- Add product to cart
-- Change cart item quantity
-- Remove cart item
-- Create order from cart
-
-### Phase 5: Payment Simulation
-
-Goal: Practice real-world business flow without real payment integration first.
-
-Tasks:
-
-- Payment status
-- Mock payment API
-- Payment success/failure
-- Order status transition after payment
-- Payment cancellation
-
-### Phase 6: Production Readiness
-
-Goal: Make the project deployable.
-
-Tasks:
-
-- Docker
-- MySQL container
-- Spring profiles
-- Environment variables
-- GitHub Actions
-- Cloud deployment
-- Nginx reverse proxy
-- HTTPS
-- Logging
-- Monitoring
+```text
+access token
+refresh token
+stateless authentication
+token expiration
+token storage risk
+refresh token rotation
+logout difficulty with stateless tokens
+Redis use for refresh token storage or blacklist
+```
 
 ---
 
-## 12. Testing Roadmap
+## 13. Authentication Implementation Recommendation
 
-Current project already contains some member-related tests.
+Recommended implementation order:
 
-Recommended next tests:
+```text
+1. Run local build/test first.
+2. Improve fallback exception logging.
+3. Add Member password field.
+4. Implement signup.
+5. Implement basic session login.
+6. Confirm JSESSIONID cookie in browser/dev tools or API client.
+7. Implement /me.
+8. Implement logout.
+9. Configure session timeout and cookie options.
+10. Study multi-server in-memory session limitation.
+11. Compare Redis Session and JWT.
+12. Implement JWT only after session flow is clear.
+```
 
-### Service tests
+Preferred next concrete feature:
 
-- Member signup success
-- Duplicate email failure
-- Product stock decrease
-- Product stock shortage failure
-- Order creation success
-- Order cancellation success
-- Duplicate cancellation failure
+```text
+Cookie-based Session login using HttpSession first, then JWT later.
+```
 
-### Repository tests
+Spring Security decision:
 
-- Find member by email
-- Find orders by member
-- Find order items by order
-
-### Controller tests
-
-- Member API validation
-- Order creation validation
-- Product list API
-- Error response format
-
-### Integration tests
-
-- Full order creation flow
-- Full order cancellation flow
-- Signup/login/order flow after authentication is added
-
-Recommended tools:
-
-- JUnit 5
-- AssertJ
-- Spring Boot Test
-- MockMvc
-- Testcontainers later
+- Spring Security can be introduced during the session-login stage.
+- But the assistant must explain how Spring Security uses session/cookie internally.
+- Avoid introducing JWT before the session model is clear.
 
 ---
 
-## 13. JPA Learning Priorities
+## 14. Handoff Summary for New Chat
 
-For this project, the most important JPA concepts are:
+Use this summary when continuing the project:
 
-1. Entity identity
-2. `@ManyToOne`
-3. `@OneToMany`
-4. Lazy loading
-5. Owning side
-6. Cascade
-7. Orphan removal
-8. Dirty checking
-9. Transaction boundary
-10. N+1 query problem
-11. Fetch join
-12. JPQL
-13. QueryDSL
+```text
+This project is `jpa-prac`, a Java 21 + Spring Boot + MySQL practice project.
+The goal is to grow it into a portfolio-level Spring web application.
+The main domains are Member, Product, Orders, and OrderItem.
 
-The assistant should explain JPA concepts using this project's domain whenever possible.
+Use PROJECT_CONTEXT.md as the stable project reference.
+Use PROJECT_LOG.md as the progress and handoff record.
 
-Example:
+The assistant should act as a Spring/JPA teacher and code reviewer.
+Explain concepts in Korean, provide Java/Spring examples when useful, and review code with production-readiness and portfolio-readiness in mind.
 
-- Member has many orders.
-- Order has many order items.
-- Order item references product.
-- Product stock changes through domain methods.
+Current repository status:
+- Feature-based package structure exists.
+- JPA auditing timestamps exist.
+- Global exception handling exists.
+- Domain-specific exceptions exist and use the `Exception` suffix.
+- `MethodArgumentNotValidException` handler exists.
+- Fallback logging exists but should include the exception object for stack trace preservation.
+- Build/test could not be executed inside the assistant environment due DNS/Maven availability limits; user should run `./mvnw clean test` locally.
 
----
+Current priority:
+1. Run and review real local build/test output.
+2. Improve fallback logging with stack trace preservation.
+3. Add focused tests around exceptions/order behavior.
+4. Start authentication with Session first, JWT later.
 
-## 14. Production-Minded Standards
+Authentication roadmap:
+1단계: 기본 HttpSession으로 로그인 흐름 이해
+2단계: session timeout, cookie, logout 이해
+3단계: multi-server 문제 이해
+4단계: Redis Session 또는 JWT 비교
+```
 
-As this project moves toward a commercializable web service, apply these standards gradually.
-
-### Security
-
-- Do not store raw passwords.
-- Do not expose internal entity fields.
-- Do not trust client-provided user ID after login.
-- Use authenticated principal for user-specific operations.
-- Separate user and admin permissions.
-
-### Database
-
-- Do not use `ddl-auto=create` in production.
-- Use migration tools.
-- Add indexes where needed.
-- Use unique constraints for email.
-- Think about transaction isolation for stock changes.
-
-### API
-
-- Use consistent endpoint naming.
-- Use proper HTTP status codes.
-- Add validation.
-- Add error response body.
-- Add Swagger documentation.
-- Add pagination for list APIs.
-
-### Code
-
-- Keep controllers thin.
-- Keep business rules in service or domain methods.
-- Avoid entity exposure.
-- Use DTOs.
-- Keep package names consistent.
-- Use clear method names.
-- Add tests when fixing bugs or adding features.
-
----
-
-## 15. Assistant Instructions for Future Conversations
-
-When the user asks about this project:
-
-1. Assume the user is working on `jpa-prac`.
-2. Answer in Korean.
-3. Provide Java/Spring code when useful.
-4. Connect explanations to the current product/member/order domain.
-5. Review code with production-readiness and portfolio-readiness in mind.
-6. Separate beginner-friendly explanation from best-practice recommendation.
-7. Recommend incremental changes instead of large rewrites.
-8. If reviewing code, classify issues as Critical, Important, or Optional.
-9. Suggest the next best feature or refactoring step when relevant.
-10. Treat login/authentication as a likely next major feature.
-
----
-
-## 16. What To Ask or Check Later
-
-When more precision is needed, check or ask for:
-
-- Current entity source code
-- Current controller source code
-- Current service source code
-- Current repository source code
-- Current DTOs
-- Current test files
-- Current API behavior
-- Current database schema
-- Whether the project uses sessions or JWT
-- Whether the project has a frontend direction
-- Whether the project will be deployed to AWS, NCP, or another platform
-
-This document gives long-term context, but exact code review should still be based on the current source code.
-
----
-
-## 17. Current Best Next Step
-
-Current verified state:
-
-1. `PROJECT_CONTEXT.md` exists.
-2. `PROJECT_LOG.md` exists.
-3. Package structure has been refactored toward feature-based packages.
-4. Current main packages are `member`, `product`, and `orders`.
-5. `global` and `auth` packages are not yet the immediate implemented structure.
-
-Recommended next step:
-
-1. Move `OrderStatus` from `orders.dto` to `orders.entity`.
-2. Add global exception handling.
-3. Add `ErrorResponse` and decide the error response format.
-4. Separate local/test/prod configuration.
-5. Improve order cancellation from `DELETE /orders/{orderId}` to `POST /orders/{orderId}/cancel`.
-6. Review transaction boundaries and JPA mappings.
-7. Then add signup with Spring Security.
-8. Then add session-based login.
-
-The next major feature can be login, but the project should first stabilize error handling, configuration, and package structure so authentication does not get built on top of fragile foundations.

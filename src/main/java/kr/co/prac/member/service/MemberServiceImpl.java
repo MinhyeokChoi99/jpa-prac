@@ -11,6 +11,7 @@ import kr.co.prac.member.dto.MemberCreateRequest;
 import kr.co.prac.member.dto.MemberResponse;
 import kr.co.prac.member.dto.MemberUpdateRequest;
 import kr.co.prac.member.entity.Member;
+import kr.co.prac.member.entity.Role;
 import kr.co.prac.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +30,7 @@ public class MemberServiceImpl implements MemberService{
 		Member member = new Member();
 		member.setName(memberCreateRequest.getName());
 		member.setEmail(memberCreateRequest.getEmail());
+		member.setRole(Role.ADMIN);
 		Member savedMember = memberRepository.save(member);
 		return new MemberResponse(savedMember);
 	}

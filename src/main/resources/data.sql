@@ -4,11 +4,11 @@ VALUES
 ('Spring Boot Book', 42000, 79, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 ('QueryDSL Book', 38000, 47, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO member (email, name, created_at, updated_at)
+INSERT INTO member (email, name, password, role , created_at, updated_at)
 VALUES
-('kim@example.com', 'Kim', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('lee@example.com', 'Lee', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('park@example.com', 'Park', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+('kim@example.com', 'Kim', 123 ,  "ADMIN", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('lee@example.com', 'Lee', 456 ,  "USER", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('park@example.com', 'Park', 789 , "USER" ,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO orders (member_id, order_date, status, created_at, updated_at)
 VALUES

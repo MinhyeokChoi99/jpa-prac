@@ -12,29 +12,11 @@ Use this file as a handoff document when continuing the project in a new chat se
 - Repository: `https://github.com/MinhyeokChoi99/jpa-prac`
 - Main purpose: Java + Spring + MySQL practice project
 - Long-term goal: Build a portfolio-level, production-minded Spring web application
-- User language: Korean
-- Assistant response style: Korean explanation + Java/Spring examples
-
-Main domain:
-
-- Member
-- Product
-- Orders
-- OrderItem
-
-Current confirmed tech stack:
-
-- Java 21
-- Spring Boot
-- Spring Web MVC
-- Spring Data JPA
-- Spring Data JDBC
-- Bean Validation
-- MySQL
-- H2 for tests
-- Lombok
-- Springdoc OpenAPI / Swagger
-- Maven
+- Main domain:
+  - Member
+  - Product
+  - Orders
+  - OrderItem
 
 ---
 
@@ -45,7 +27,6 @@ The project should be developed step by step, with emphasis on:
 - Java/Spring learning
 - JPA relationship understanding
 - Clean layered architecture
-- Feature-based package organization
 - API design for future frontend separation
 - Production-minded refactoring
 - Portfolio-readiness
@@ -57,109 +38,22 @@ When important decisions or progress updates are made, the assistant should gene
 
 ---
 
-## 3. Current GitHub-Verified Package Structure
-
-Verified from the latest pushed GitHub repository on 2026-06-22.
-
-Current main application class:
-
-```text
-src/main/java/kr/co/prac/PracApplication.java
-```
-
-Current feature-based package structure:
-
-```text
-src/main/java/kr/co/prac
-├── PracApplication.java
-├── global
-│   ├── config
-│   │   └── JpaAuditingConfiguration.java
-│   └── entity
-│       └── BaseTimeEntity.java
-├── member
-│   ├── controller
-│   │   └── MemberController.java
-│   ├── dto
-│   ├── entity
-│   │   └── Member.java
-│   ├── repository
-│   │   └── MemberRepository.java
-│   └── service
-│       ├── MemberService.java
-│       └── MemberServiceImpl.java
-├── product
-│   ├── controller
-│   │   └── ProductController.java
-│   ├── dto
-│   ├── entity
-│   │   └── Product.java
-│   ├── repository
-│   │   └── ProductRepository.java
-│   └── service
-│       └── ProductService.java
-└── orders
-    ├── controller
-    │   └── OrdersController.java
-    ├── dto
-    ├── entity
-    │   ├── Orders.java
-    │   ├── OrderItem.java
-    │   └── OrderStatus.java
-    ├── repository
-    │   ├── OrdersRepository.java
-    │   └── OrderItemRepository.java
-    └── service
-        └── OrderService.java
-```
-
-Assessment:
-
-- The main package refactor from layer-based packages to feature-based packages has been completed enough to continue Phase 0 stabilization.
-- `member`, `product`, and `orders` are separated by domain.
-- The current package name is `orders`, not `order`. This is acceptable if it stays consistent.
-- `OrderStatus` has been moved to `orders.entity`; this is now correct because order status is domain state, not a DTO.
-- `global.config` and `global.entity` now exist for shared infrastructure/configuration.
-- `auth` should be added later when signup/login work begins.
-
----
-
-## 4. Current Priority
+## 3. Current Priority
 
 Current recommended priority:
 
-### Phase 0: Project Stabilization Before Authentication
-
-The package-structure refactor and basic auditing timestamp support have been pushed, but stabilization is not fully complete yet.
-
-1. Add or improve global exception handling.
-2. Define a consistent error response format.
-3. Separate application configuration by profile, such as local, test, and prod.
-4. Review DTO usage and avoid exposing entities directly through APIs.
-5. Improve order cancellation API from deletion-style behavior to a domain command.
-6. Review transaction boundaries in service methods.
-7. Review current JPA mappings for Member, Product, Orders, and OrderItem.
-8. Review current tests and decide which tests should be added before authentication.
-
-### Phase 1: Member and Authentication
-
-Authentication should begin only after the basic project structure is stable.
-
-1. Add password and role to `Member`.
-2. Add `PasswordEncoder`.
-3. Implement signup API.
-4. Implement `CustomUserDetails`.
-5. Implement `CustomUserDetailsService`.
-6. Implement session-based login.
-7. Add `GET /api/me`.
-8. Use `@AuthenticationPrincipal` for current-user APIs.
-9. Add role-based authorization for USER and ADMIN.
-10. Prepare APIs for future React/Vue frontend separation.
-11. Consider JWT after the basic authentication and authorization flow is stable.
+1. Add or improve global exception handling
+2. Separate application configuration by profile
+3. Improve order cancellation API
+4. Add member signup
+5. Add session-based login
+6. Add authorization with roles
+7. Prepare APIs for future React/Vue frontend separation
+8. Consider JWT after the basic authentication and authorization flow is stable
 
 ---
 
-## 5. Current Decisions
+## 4. Current Decisions
 
 ### 2026-06-22
 
@@ -168,59 +62,34 @@ Authentication should begin only after the basic project structure is stable.
 - The project may continue across multiple chat sessions.
 - Important decisions and progress should be recorded here to preserve continuity.
 - When this file needs to be updated, the assistant should generate a complete updated Markdown file instead of asking the user to manually paste fragmented snippets.
-- Before project-related recommendations, the assistant should check the latest GitHub project Markdown files and current repository structure when available.
 - The assistant should explain Spring/JPA concepts in Korean with Java/Spring examples.
 - The assistant should act as a Spring/JPA teacher and code reviewer, not only a code generator.
-- Before implementing login, the project should first go through project stabilization and structural cleanup.
+- Login knowledge will be learned from the basics before choosing a final implementation style.
 - Authentication will be implemented with session-based login first.
 - JWT will be considered later after the basic Spring Security authentication and authorization flow is understood.
 - The authentication structure should be designed so that the service layer does not depend on session, request, or JWT details.
 - Controllers may use `@AuthenticationPrincipal`, but services should receive domain-level values such as `memberId`.
 - Future React/Vue frontend separation should be considered when designing authentication APIs.
-
-### Package Structure Decision
-
-```text
-Decision:
-- Keep the current pushed feature-based structure as the base.
-- Current implemented domain packages are member, product, and orders.
-- Do not mix order and orders packages.
-- Add global packages for exception/config/response/common entity concerns.
-- Add auth later when signup/login implementation starts.
-
-Reason:
-- Feature-based packages are easier to maintain as the project grows.
-- The current structure already separates member, product, and orders concerns.
-- Additional renaming from orders to order is optional and not urgent.
-
-Status:
-- Completed enough for now.
-- OrderStatus has been moved to orders.entity.
-```
-
-### Auditing Decision
-
-```text
-Decision:
-- Add entity timestamp auditing during Phase 0 stabilization.
-- Add createdAt and updatedAt through BaseTimeEntity.
-- Use global.config.JpaAuditingConfiguration to enable JPA auditing.
-- Apply BaseTimeEntity to Member, Product, Orders, and OrderItem.
-- Do not add createdBy or updatedBy yet.
-
-Reason:
-- createdAt and updatedAt are common operational fields for main entities.
-- Auditing timestamps are infrastructure/stabilization work, not a large business feature.
-- createdBy and updatedBy require a meaningful authenticated principal, so they should wait until Spring Security/session login is introduced.
-
-Status:
-- Implemented and pushed.
-- Minor cleanup recommended: make BaseTimeEntity abstract, add getters, and explicitly name created_at/updated_at columns if desired.
-```
+- React/Vue frontend separation is a future direction, but backend API design should already consider it.
 
 ---
 
-## 6. Completed Work
+## 5. Completed Work
+
+Record completed work here.
+
+### Example Format
+
+```text
+Date: YYYY-MM-DD
+Task:
+- What was completed
+
+Notes:
+- Important implementation details
+- Important design decisions
+- Any issues found
+```
 
 ### Entries
 
@@ -229,137 +98,66 @@ Status:
 Task:
 - Created initial `PROJECT_LOG.md` skeleton.
 - Decided how to preserve project continuity across deleted or newly created chat sessions.
-- Clarified that future `PROJECT_LOG.md` updates should be delivered as a complete updated file.
 - Clarified the authentication learning path: session-based login first, JWT later.
-- Clarified that project stabilization should happen before authentication implementation.
-- Refactored and pushed the main package structure toward feature-based packages.
-- Confirmed from GitHub that `member`, `product`, and `orders` packages now exist under `kr.co.prac`.
-- Moved `OrderStatus` into `orders.entity`.
-- Added auditing timestamp support:
-  - `global.config.JpaAuditingConfiguration`
-  - `global.entity.BaseTimeEntity`
-  - `createdAt`
-  - `updatedAt`
-  - entity inheritance for `Member`, `Product`, `Orders`, and `OrderItem`
-- Updated `data.sql` seed data to include `created_at` and `updated_at` values.
+- Clarified that future `PROJECT_LOG.md` updates should be delivered as a complete updated file.
 
 Notes:
 - This file will be used to preserve project continuity across deleted or newly created chat sessions.
 - `PROJECT_CONTEXT.md` remains the stable project reference document.
 - `PROJECT_LOG.md` tracks current decisions, progress, and next tasks.
-- Current immediate focus is not login implementation yet.
-- Current immediate focus is the remaining stabilization work after package refactoring and auditing.
 
 ---
 
-## 7. In Progress
+## 6. In Progress
+
+Record the feature or refactoring currently being worked on.
 
 ### Current Task
 
 ```text
-Task: Project stabilization before authentication
-Status: Package structure refactor and auditing timestamps pushed; remaining stabilization in progress
+Task: Authentication preparation and project stabilization
+Status: Planning
 Related files:
 - PROJECT_CONTEXT.md
 - PROJECT_LOG.md
-- src/main/java/kr/co/prac/global/config/JpaAuditingConfiguration.java
-- src/main/java/kr/co/prac/global/entity/BaseTimeEntity.java
-- src/main/java/kr/co/prac/member/**
-- src/main/java/kr/co/prac/product/**
-- src/main/java/kr/co/prac/orders/**
-- future global/exception classes
-- application configuration files
-
+- Member entity
+- Auth-related classes to be added later
+- SecurityConfig to be added later
 Notes:
-- Login/authentication is not the immediate implementation step yet.
-- The main package refactor has been pushed.
-- Auditing timestamps have been added.
-- Before implementing login, the project should still stabilize exception handling, configuration profiles, DTO boundaries, API conventions, and order cancellation behavior.
-- Signup should be implemented before login after stabilization is complete.
+- Before implementing login, the project should stabilize exception handling, configuration profiles, and API conventions.
+- Signup should be implemented before login.
 - Session-based login is the first authentication target.
 - JWT should be considered after Spring Security basics are understood.
 ```
 
 ---
 
-## 8. Next Tasks
+## 7. Next Tasks
 
 Keep this list short and ordered.
 
 ```text
-1. Add global.exception.GlobalExceptionHandler.
-2. Add global.exception.ErrorCode.
-3. Add global.exception.ErrorResponse.
-4. Add global.exception.BusinessException.
-5. Replace meaningful IllegalArgumentException / IllegalStateException usages with domain-specific exceptions.
-6. Decide whether to add global.response.ApiResponse now or later.
-7. Separate application configuration into local/test/prod profiles.
-8. Improve order cancellation API from DELETE /orders/{orderId} to POST /orders/{orderId}/cancel.
-9. Review service transaction boundaries.
-10. Review JPA mappings for Member, Product, Orders, and OrderItem.
-11. Review current tests and add missing tests for stock/order/auditing behavior if useful.
-12. After stabilization, add password and role to Member.
-13. Add PasswordEncoder.
-14. Implement signup API.
-15. Implement CustomUserDetails and CustomUserDetailsService.
-16. Implement session-based login.
-17. Add GET /api/me.
-18. Add role-based authorization for USER and ADMIN.
-19. Consider JWT after the basic authentication and authorization flow is stable.
+1. Add or improve Global Exception Handler.
+2. Separate application configuration into profiles such as local, test, and prod.
+3. Improve order cancellation API from deletion-style behavior to a domain command.
+4. Add password and role to `Member`.
+5. Add `PasswordEncoder`.
+6. Implement signup API.
+7. Implement `CustomUserDetails`.
+8. Implement `CustomUserDetailsService`.
+9. Implement session-based login.
+10. Add `GET /api/me`.
+11. Use `@AuthenticationPrincipal` for current-user APIs.
+12. Add role-based authorization for USER and ADMIN.
+13. Prepare APIs for future React/Vue frontend separation.
+14. Consider JWT after the basic authentication and authorization flow is stable.
 ```
 
 ---
 
-## 9. Problems / Cleanups Found During Structure Check
+## 8. Important Design Decisions
 
-### Important
-
-```text
-- OrdersController still uses DELETE /orders/{orderId} for cancellation-like behavior. This should become POST /orders/{orderId}/cancel later.
-- ProductController imports org.springframework.stereotype.Controller even though it uses @RestController. Remove the unused import during cleanup if still present.
-- Global exception handling has not yet been implemented. Add global.exception next.
-- Current service/entity code still uses broad exceptions such as IllegalArgumentException and IllegalStateException for meaningful business failures. Replace gradually with domain-specific exceptions.
-```
-
-### Auditing Cleanup Recommendations
-
-```text
-- BaseTimeEntity currently works structurally, but it is better as an abstract class because it should not be instantiated directly.
-- BaseTimeEntity should expose getters for createdAt and updatedAt if DTOs/tests need to read auditing timestamps later.
-- Explicit @Column(name = "created_at") and @Column(name = "updated_at") are recommended for clarity, especially because data.sql uses snake_case column names.
-- createdBy and updatedBy should not be added until authentication/Spring Security is introduced.
-```
-
-### Optional
-
-```text
-- The package name is orders instead of order. This is acceptable if consistent. Renaming to order is optional and not urgent.
-- Consider making service field names less implementation-specific later, for example memberService instead of memberServiceImpl.
-```
-
----
-
-## 10. Important Design Decisions
-
-### Project Stabilization Before Authentication
-
-```text
-Decision:
-- Stabilize the project before implementing signup/login.
-- Focus first on package structure, auditing timestamps, exception handling, configuration profiles, DTO/API conventions, order cancellation semantics, transaction boundaries, and JPA mappings.
-- Authentication should be built after the backend foundation becomes cleaner and more consistent.
-
-Reason:
-- Authentication touches many parts of the project: Member, API design, security configuration, exception handling, current-user APIs, and authorization.
-- If login is implemented before the basic structure is stable, later refactoring may become more difficult.
-- A cleaner foundation makes session login and future JWT migration easier.
-
-Status:
-- Decided.
-- Package structure is mostly completed.
-- Auditing timestamps are implemented.
-- Remaining stabilization tasks are still pending.
-```
+Record decisions that should not be forgotten.
 
 ### Authentication
 
@@ -367,20 +165,19 @@ Status:
 Decision:
 - Start with session-based login before JWT.
 - Keep authentication details isolated from the service layer.
-- Use @AuthenticationPrincipal in controllers to access the current authenticated user.
-- Pass domain-level values such as memberId into services.
+- Use `@AuthenticationPrincipal` in controllers to access the current authenticated user.
+- Pass domain-level values such as `memberId` into services.
 - Consider JWT later when React/Vue frontend separation becomes more concrete.
 
 Reason:
 - Session-based login is easier for learning the basic Spring Security flow.
 - JWT adds extra concerns such as token issuance, token validation, token storage, refresh tokens, CORS, and logout strategy.
-- If authentication concerns are isolated in the security layer, switching from session to JWT later should not require rewriting core domain or service logic.
+- If authentication concerns are isolated in the security layer, switching from session to JWT later should not require rewriting the core domain or service logic.
 
 Status:
 - Decided.
 - Signup should be implemented before login.
 - Session-based login is the current recommended first implementation.
-- Authentication implementation should begin after project stabilization.
 ```
 
 ### API Design
@@ -388,8 +185,8 @@ Status:
 ```text
 Decision:
 - Design APIs with future React/Vue frontend separation in mind.
-- Prefer current-user endpoints after login, such as GET /api/me and GET /api/me/orders.
-- Avoid relying on client-provided memberId for user-specific operations after authentication is introduced.
+- Prefer current-user endpoints after login, such as `GET /api/me` and `GET /api/me/orders`.
+- Avoid relying on client-provided `memberId` for user-specific operations after authentication is introduced.
 - Prefer domain-command endpoints for business actions such as order cancellation.
 
 Reason:
@@ -402,6 +199,21 @@ Status:
 - Exact API implementation is pending.
 ```
 
+### Package Structure
+
+```text
+Decision:
+- Gradually move toward feature-based packages such as `member`, `product`, `order`, `auth`, and `global`.
+
+Reason:
+- Feature-based packages are easier to maintain as the project grows.
+- Authentication and global exception handling should not be scattered across unrelated packages.
+
+Status:
+- Recommended.
+- Exact refactoring status is pending code review.
+```
+
 ### Database / Configuration
 
 ```text
@@ -409,210 +221,292 @@ Decision:
 - Separate application configuration by profile.
 - Do not rely on local database settings as production settings.
 - Avoid hardcoded database credentials.
-- Reduce long-term reliance on ddl-auto=create.
-- Keep auditing timestamps as application-level entity metadata.
+- Reduce long-term reliance on `ddl-auto=create`.
 
 Reason:
 - Profile separation is necessary for local development, tests, and future deployment.
 - Hardcoded credentials and destructive schema settings are not production-safe.
-- Auditing timestamps are useful for debugging, administration, and future production-readiness.
 
 Status:
 - Recommended.
-- Auditing timestamps implemented.
-- Profile separation still pending.
+- Implementation pending.
+```
+
+### Project Log Management
+
+```text
+Decision:
+- Keep a single `PROJECT_LOG.md` file in the project root.
+- Update the same file over time rather than creating many separate log files.
+- When updates are needed, the assistant should generate a complete updated `PROJECT_LOG.md` file for download.
+
+Reason:
+- This reduces manual copy/paste work.
+- A single current log file is easier to upload in new chat sessions.
+- Git history can track how the log evolves over time.
+
+Status:
+- Decided.
 ```
 
 ---
 
-## 11. Current Domain Notes
+## 9. Code Review Notes
+
+Use this section when reviewing code.
+
+### Critical
+
+Issues that may cause runtime errors, wrong data, security problems, or production failure.
+
+```text
+- Do not store raw passwords when authentication is added.
+- Do not let service methods depend directly on `HttpSession`, `HttpServletRequest`, or JWT token strings.
+- Do not trust client-provided `memberId` for user-specific operations after login is introduced.
+```
+
+### Important
+
+Issues that affect maintainability, scalability, or backend conventions.
+
+```text
+- Add global exception handling before authentication becomes complex.
+- Use DTOs for API requests and responses.
+- Keep controllers thin and services focused on business logic.
+- Use `@AuthenticationPrincipal` at the controller boundary for current-user APIs.
+- Separate auth/security concerns from member/order/product domain logic.
+```
+
+### Optional
+
+Useful improvements that are not urgent.
+
+```text
+- Add more detailed Swagger documentation later.
+- Add a consistent API response wrapper later if needed.
+- Add Docker and CI/CD after core backend features are stable.
+- Add JWT after session-based login and authorization are understood.
+```
+
+---
+
+## 10. Current Domain Notes
 
 ### Member
 
-Current role:
+```text
+Current state:
+- Member currently represents a user/customer-like entity.
+- Known or expected fields include number, name, and email.
 
-- User/customer-like entity.
-- Eventually becomes authentication subject.
+Future direction:
+- Add password.
+- Add role.
+- Make email unique.
+- Use Member as the authentication subject.
+- Add signup before login.
 
-Current/expected fields:
-
-- number
-- name
-- email
-- createdAt
-- updatedAt
-
-Near-future direction:
-
-- Add password only when signup/security implementation begins.
-- Add role such as USER/ADMIN when authorization is introduced.
-- Add unique email constraint and duplicate email handling.
+Open questions:
+- Current exact Member entity code needs review before implementation.
+```
 
 ### Product
 
-Current role:
+```text
+Current state:
+- Product represents an item that can be ordered.
+- Known or expected fields include number, name, price, and stock.
 
-- Item that can be ordered.
-- Holds price and stock.
+Future direction:
+- Add admin-only product create/update/delete APIs.
+- Add product detail API.
+- Add product search/filtering and pagination.
 
-Current/expected fields:
-
-- number
-- name
-- price
-- stock
-- createdAt
-- updatedAt
-
-Important current behavior:
-
-- Stock can increase/decrease.
-- Stock shortage should eventually use a domain-specific exception instead of broad IllegalArgumentException.
-
-Near-future direction:
-
-- Admin-only product CRUD after authentication/authorization.
-- Product detail API.
-- Product pagination/search.
+Open questions:
+- Current product API and stock handling implementation need review before deeper refactoring.
+```
 
 ### Orders
 
-Current role:
+```text
+Current state:
+- Orders represents a purchase/order transaction.
+- Current or expected behavior includes order creation, order detail retrieval, order list retrieval, member-specific order lookup, and cancellation.
 
-- Order transaction connected to Member.
-
-Current/expected fields:
-
-- number
-- member
-- orderDate
-- status
-- createdAt
-- updatedAt
-
-Near-future direction:
-
-- Replace deletion-style cancellation endpoint with command endpoint.
+Future direction:
+- Replace deletion-style cancellation with a clearer domain command such as `POST /orders/{orderId}/cancel`.
+- Add order total price.
+- Return order items in order detail response.
 - Prevent duplicate cancellation.
-- Return order detail with order items.
-- Calculate total price.
+- After login, use current-user APIs such as `GET /api/me/orders`.
+
+Open questions:
+- Current order entity, order status enum, and cancellation logic need review.
+```
 
 ### OrderItem
 
-Current role:
-
-- Order line item connecting Orders and Product.
-
-Current/expected fields:
-
-- number
-- orders
-- product
-- orderPrice
-- count
-- createdAt
-- updatedAt
-
-Near-future direction:
-
-- Keep order price snapshot.
-- Avoid exposing entity graph directly through API responses.
-- Watch lazy loading/N+1 query problems.
-
----
-
-## 12. Exception Handling Plan
-
-Next stabilization target:
-
 ```text
-global.exception
-├── BusinessException.java
-├── ErrorCode.java
-├── ErrorResponse.java
-└── GlobalExceptionHandler.java
-```
+Current state:
+- OrderItem connects Orders and Product.
+- It should preserve order price and count at the time of ordering.
 
-Recommended first domain exceptions:
+Future direction:
+- Use DTOs for order item responses.
+- Be careful with lazy loading and N+1 queries.
+- Add order detail response that includes order items.
 
-```text
-member.exception
-├── MemberNotFoundException.java
-└── DuplicateEmailException.java
-
-product.exception
-├── ProductNotFoundException.java
-└── OutOfStockException.java
-
-orders.exception
-├── OrderNotFoundException.java
-├── AlreadyCanceledOrderException.java
-└── EmptyOrderRequestException.java
-```
-
-Initial ErrorCode candidates:
-
-```text
-MEMBER_NOT_FOUND
-DUPLICATE_EMAIL
-PRODUCT_NOT_FOUND
-OUT_OF_STOCK
-ORDER_NOT_FOUND
-EMPTY_ORDER_REQUEST
-ALREADY_CANCELED_ORDER
-INVALID_INPUT_VALUE
-INTERNAL_SERVER_ERROR
-```
-
-Principle:
-
-- Define only meaningful business failures explicitly.
-- Let validation failures be handled by a validation exception handler.
-- Let unexpected system failures fall back to INTERNAL_SERVER_ERROR.
-
----
-
-## 13. Testing Notes
-
-Current recommended next tests:
-
-```text
-- Member creation success
-- Duplicate email failure after exception handling is added
-- Product stock decrease success
-- Product stock shortage failure
-- Order creation success
-- Order cancellation success
-- Duplicate cancellation failure
-- Auditing timestamp non-null check if useful
-```
-
-For auditing specifically:
-
-```text
-- Repository save should populate createdAt and updatedAt.
-- data.sql seed rows must include created_at and updated_at because SQL initialization bypasses JPA auditing listeners.
+Open questions:
+- Current JPA relationship mapping needs review.
 ```
 
 ---
 
-## 14. Next Best Step
+## 11. Testing Notes
 
-The next best implementation step is:
+Record test coverage and future test targets.
+
+### Existing Tests
 
 ```text
-Global exception handling
+- Some member-related tests appear to exist according to project context.
+- Exact test files need review.
 ```
 
-Reason:
+### Recommended Tests
 
-- Package structure is now mostly stable.
-- Auditing timestamps are implemented.
-- The current service/entity code still uses broad exceptions for domain failures.
-- Authentication should not be implemented before error handling conventions are clear.
+```text
+- Member signup success.
+- Duplicate email failure.
+- Password encoding verification at a behavior level.
+- Product stock decrease success.
+- Product stock shortage failure.
+- Order creation success.
+- Order cancellation success.
+- Duplicate cancellation failure.
+- Current-user order lookup after authentication is added.
+- Admin-only product management access control after authorization is added.
+```
 
-Recommended next commit message:
+---
 
-```bash
-git commit -m "feat: add global exception handling"
+## 12. Blockers / Questions
+
+Record anything that is currently unclear or blocking progress.
+
+```text
+- Exact current source code has not been reviewed in this session.
+- Need to confirm current package names and entity mappings before detailed refactoring.
+- Need to decide whether global exception handling should be implemented before or together with signup.
+```
+
+---
+
+## 13. New Chat Handoff Summary
+
+When starting a new chat session, paste or upload `PROJECT_CONTEXT.md` and this file.
+
+Use this summary:
+
+```text
+This project is `jpa-prac`, a Java 21 + Spring Boot + MySQL practice project.
+The goal is to grow it into a portfolio-level Spring web application.
+The main domains are Member, Product, Orders, and OrderItem.
+
+Use PROJECT_CONTEXT.md as the stable project reference.
+Use PROJECT_LOG.md as the current progress and handoff record.
+
+The assistant should act as a Spring/JPA teacher and code reviewer.
+Explain concepts in Korean, provide Java/Spring examples when useful, and review code with production-readiness and portfolio-readiness in mind.
+
+Current priority:
+1. Add or improve global exception handling
+2. Separate application profiles
+3. Improve order cancellation API
+4. Add signup
+5. Add session-based login
+6. Add authorization
+7. Prepare for future React/Vue frontend separation
+8. Consider JWT later after Spring Security basics are understood
+
+Important authentication decision:
+- Implement session-based login first.
+- Consider JWT later.
+- Keep service logic independent from session/request/JWT details.
+- Controllers may use `@AuthenticationPrincipal`, but services should receive values such as `memberId`.
+
+Project log workflow:
+- Keep one `PROJECT_LOG.md` file.
+- When updates are needed, the assistant should generate a complete updated file for download.
+```
+
+---
+
+## 14. Update Template
+
+Use this template whenever the project state changes.
+
+---
+
+## 2026-06-23 - Authentication Roadmap Decision Update
+
+### Completed
+- Updated `PROJECT_CONTEXT.md` to reflect the final authentication learning and implementation direction.
+- Clarified that the next authentication path should be `Session -> JWT`, not direct JWT-first implementation.
+- Reframed the authentication roadmap around cookie-based server sessions before token-based authentication.
+
+### Decisions
+- Learn and implement authentication in this order:
+  1. Basic `HttpSession` login flow.
+  2. Session timeout, `JSESSIONID` cookie behavior, and logout.
+  3. Multi-server session limitations.
+  4. Compare Redis Session and JWT.
+  5. Implement JWT only after session fundamentals are understood.
+- Do not jump directly into JWT before understanding how server-side session login works.
+- Spring Security may be introduced during the session stage, but explanations should still connect Security internals to `HttpSession`, `JSESSIONID`, `SecurityContext`, and `Authentication`.
+
+### Reasoning
+- Session login helps clarify the basic question: where is login state stored?
+- Cookie-based sessions show how the browser and server cooperate through `JSESSIONID`.
+- Multi-server session limitations explain why in-memory Tomcat sessions are insufficient for scaled deployments.
+- Redis Session and JWT should be compared only after the tradeoff between server-side state and stateless token verification is clear.
+
+### Next
+1. Run local build/test commands:
+   - `./mvnw clean test`
+   - `./mvnw clean package`
+2. Improve `GlobalExceptionHandler` fallback logging to include the exception object:
+   - `log.error("Unexpected exception occurred", e);`
+3. Start authentication with session-based login:
+   - Add `password` to `Member`.
+   - Add signup request/response flow.
+   - Store encoded password.
+   - Implement login flow using `HttpSession` and `JSESSIONID`.
+   - Implement `/members/me`.
+   - Implement logout with `session.invalidate()`.
+4. After session basics, study multi-server session limitations and compare Redis Session vs JWT.
+
+### Notes for Future Chat
+- The current authentication roadmap is now: `Session first -> JWT later`.
+- The user specifically chose this sequence after discussing cookie timeout, Tomcat multi-server session limitations, Redis Session, RDBMS session storage, and JWT.
+- Future answers should not recommend direct JWT-first implementation unless the user explicitly changes direction.
+
+
+```md
+## YYYY-MM-DD
+
+### Completed
+- 
+
+### Decisions
+- 
+
+### Problems Found
+- 
+
+### Next
+- 
+
+### Notes for Future Chat
+- 
 ```
