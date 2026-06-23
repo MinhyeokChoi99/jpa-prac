@@ -12,13 +12,12 @@ import kr.co.prac.login.exception.InvalidPasswordException;
 import kr.co.prac.member.entity.Member;
 import kr.co.prac.member.exception.MemberNotFoundException;
 import kr.co.prac.member.repository.MemberRepository;
-import kr.co.prac.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService{
-	
+
 	private final MemberRepository memberRepository;
 	@Override
 	public LoginResponse login(LoginRequest loginRequest) {

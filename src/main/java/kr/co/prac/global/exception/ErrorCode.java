@@ -21,10 +21,12 @@ public enum ErrorCode {
 	NOT_ENOUGH_STOCK(HttpStatus.BAD_REQUEST,"재고가 부족합니다"),
 	//존재하지 않는 상품을 주문하려고 할때
 	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다"),
-	// INPUT을 잘못주었을때 -> MethodArgumentNotValidException
+	// INPUT을 잘못주었을때
 	INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다"),
-	// INPUT을 잘못주었을때 -> MethodArgumentNotValidException
+	// 비밀번호를 잘못주었을때
 	INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "잘못된 비밀번호입니다"),
+	// 로그인이 안되었을 떄
+	LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다"),
 	// 서버오류 -> GlobalExceptionHandler(Exception.class)
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"서버 내부의 오류가 발생했습니다");
 
