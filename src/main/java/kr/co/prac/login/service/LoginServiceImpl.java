@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService{
 	
-	private final MemberService memberService;
 	private final MemberRepository memberRepository;
 	@Override
 	public LoginResponse login(LoginRequest loginRequest) {

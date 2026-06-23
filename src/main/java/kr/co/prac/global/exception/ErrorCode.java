@@ -24,7 +24,7 @@ public enum ErrorCode {
 	// INPUT을 잘못주었을때 -> MethodArgumentNotValidException
 	INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다"),
 	// INPUT을 잘못주었을때 -> MethodArgumentNotValidException
-	INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "잘못된 비밀번호입니다"),
+	INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "잘못된 비밀번호입니다"),
 	// 서버오류 -> GlobalExceptionHandler(Exception.class)
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"서버 내부의 오류가 발생했습니다");
 
