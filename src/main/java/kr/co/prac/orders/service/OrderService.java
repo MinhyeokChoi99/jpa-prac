@@ -15,6 +15,8 @@ public interface OrderService {
 	List<OrderResponse> memberIdFound(Long memberId);
 	
 	List<OrderResponse> findAll();
+
+	OrderDetailResponse findOneForAdmin(Long orderId);
 	
 	void cancelOrder(Long ordersId, Long loginMemberId);
 }

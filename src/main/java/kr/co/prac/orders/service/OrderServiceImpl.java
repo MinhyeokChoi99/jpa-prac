@@ -3,7 +3,6 @@ package kr.co.prac.orders.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.co.prac.member.exception.MemberNotFoundException;
@@ -116,16 +115,28 @@ public class OrderServiceImpl implements OrderService{
 		orders.setStatus(OrderStatus.CANCEL);
 	}
 
-
+	//memberId로 order 조회
 	@Override
+	@Transactional(readOnly = true)
 	public List<OrderResponse> memberIdFound(Long memberId) {
 		List<Orders> memberOrders = ordersRepository.findByMemberNumber(memberId);
 		List<OrderResponse> list = memberOrders.stream().map(OrderResponse::new).toList();
 		return list;
 	}
-	
-	//memberId로 order 조회
-	
-	
 
+	// 관리자 전용 단건 조회
+	@Override
+	@Transactional(readOnly = true)
+	public OrderDetailResponse findOneForAdmin(Long orderId) {
+		Orders order = ordersRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
+
+		List<OrderItemResponse> orderItems = orderItemRepository.
+				findByOrdersNumber(orderId)
+				.stream()
+				.map(OrderItemResponse::new)
+				.toList();
+
+		return new OrderDetailResponse(order, orderItems);
+
+	}
 }

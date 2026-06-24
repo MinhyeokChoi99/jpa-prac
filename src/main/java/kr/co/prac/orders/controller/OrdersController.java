@@ -23,20 +23,20 @@ public class OrdersController {
 	
 	private final OrderService orderService;
 	
-	// 단건
+	// 단건 조회
 	@GetMapping("/orders/{orderId}")
 	public OrderDetailResponse orderById(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
 		return orderService.findOne(orderId, loginMemberId);
 	}
 	
-	// 생성
+	// 주문 생성
 	@PostMapping("/orders")
 	public OrderResponse createOrder(HttpServletRequest httpServletRequest, @RequestBody List<@Valid OrderCreateRequest> orderCreateRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
 		return orderService.createOrder(loginMemberId, orderCreateRequest);
 	}
-	// 취소
+	// 주문 취소
 	@PostMapping("/orders/{orderId}/cancel")
 	public void cancelOrder(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
