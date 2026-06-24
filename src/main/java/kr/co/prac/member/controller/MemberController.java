@@ -5,12 +5,7 @@ import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 import kr.co.prac.global.session.SessionUtil;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import kr.co.prac.member.dto.MemberCreateRequest;
 import kr.co.prac.member.dto.MemberResponse;
@@ -50,7 +45,12 @@ public class MemberController {
 	public List<OrderResponse> memberOrderList(HttpServletRequest httpServletRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
 		return orderService.memberIdFound(loginMemberId);
+	}
 
+	@DeleteMapping("/me")
+	public void deleteMember(HttpServletRequest httpServletRequest) {
+		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
+		memberService.delete(loginMemberId);
 	}
 	
 	
