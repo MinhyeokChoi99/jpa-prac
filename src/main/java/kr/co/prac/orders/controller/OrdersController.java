@@ -41,8 +41,9 @@ public class OrdersController {
 	}
 	// 삭제
 	@PostMapping("/orders/{orderId}")
-	public void deleteOrder(@PathVariable Long orderId) {
-		orderService.deleteOrders(orderId);
+	public void deleteOrder(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
+		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
+		orderService.deleteOrders(orderId,loginMemberId);
 	}
 	
 

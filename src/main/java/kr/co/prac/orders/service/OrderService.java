@@ -15,5 +15,5 @@ public interface OrderService {
 	
 	List<OrdersResponse> findAll();
 	
-	void deleteOrders(Long ordersId);
+	void deleteOrders(Long ordersId, Long loginMemberId);
 }

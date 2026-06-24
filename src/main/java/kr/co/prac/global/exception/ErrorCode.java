@@ -26,6 +26,8 @@ public enum ErrorCode {
 	INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "잘못된 비밀번호입니다"),
 	// 로그인이 안되었을 떄
 	LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다"),
+	// 자신의 주문이 아닐 때
+	NOT_AUTHORIZED_CANCEL(HttpStatus.FORBIDDEN, "권한이 없습니다"),
 	// 서버오류 -> GlobalExceptionHandler(Exception.class)
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"서버 내부의 오류가 발생했습니다");
 

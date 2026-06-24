@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import kr.co.prac.member.exception.MemberNotFoundException;
 import kr.co.prac.member.repository.MemberRepository;
 import kr.co.prac.orders.dto.OrderCreateRequest;
@@ -16,6 +15,7 @@ import kr.co.prac.orders.entity.OrderStatus;
 import kr.co.prac.orders.entity.Orders;
 import kr.co.prac.orders.exception.AlreadyCancelledOrderException;
 import kr.co.prac.orders.exception.EmptyItemOrderException;
+import kr.co.prac.orders.exception.NotAuthorizedCancelException;
 import kr.co.prac.orders.exception.OrderNotFoundException;
 import kr.co.prac.orders.repository.OrderItemRepository;
 import kr.co.prac.orders.repository.OrdersRepository;
@@ -86,11 +86,16 @@ public class OrderServiceImpl implements OrderService{
 
 
 	@Override// 삭제
-	public void deleteOrders(Long ordersId) {
+	public void deleteOrders(Long ordersId, Long loginMemberId) {
 		Orders orders = ordersRepository.findById(ordersId).orElseThrow(OrderNotFoundException::new);
 		if(orders.getStatus() == OrderStatus.CANCEL) {
 			throw new AlreadyCancelledOrderException();
 		}
+		
+		if(!orders.getMember().getNumber().equals(loginMemberId)) {
+			throw new NotAuthorizedCancelException();
+		}
+		
 		List<OrderItem> orderItems = orderItemRepository.findByOrdersNumber(ordersId);
 		for(OrderItem orderItem : orderItems) {		
 			Product product = orderItem.getProduct();
