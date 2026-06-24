@@ -2,10 +2,18 @@ package kr.co.prac.global.session;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import kr.co.prac.admin.exception.NotAuthorizedAdminException;
 import kr.co.prac.login.exception.LoginRequiredException;
+import kr.co.prac.member.service.MemberService;
+import lombok.RequiredArgsConstructor;
+
 
 public class SessionUtil {
+
+
     private SessionUtil() {}
+
+    private static final Long ADMIN_MEMBER_ID = 1L;
 
     public static Long getLoginMemberId(HttpServletRequest httpServletRequest) {
         HttpSession session = httpServletRequest.getSession(false);
@@ -21,5 +29,13 @@ public class SessionUtil {
 
         return memberId;
     }
+
+    public static void requireAdmin(HttpServletRequest httpServletRequest) {
+        Long loginMemberId = getLoginMemberId(httpServletRequest);
+        if (!loginMemberId.equals(ADMIN_MEMBER_ID)) {
+            throw new NotAuthorizedAdminException();
+        }
+    }
+
 
 }

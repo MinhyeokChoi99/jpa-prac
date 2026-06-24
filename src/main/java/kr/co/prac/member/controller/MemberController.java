@@ -43,23 +43,11 @@ public class MemberController {
 		return mr;
 	}
 	
-	@GetMapping
-	public List<MemberResponse> findAll() {
-		List<MemberResponse> members = memberService.findAll();
-		return members;
-	}
-	
 	@PutMapping("/{number}")
 	public MemberResponse update(@PathVariable Long number, @RequestBody MemberUpdateRequest memberUpdateRequest) {
 		return memberService.update(number, memberUpdateRequest);
 	}
-	
-	@DeleteMapping("/{number}")
-	public String delete(@PathVariable Long number) {
-		memberService.delete(number);
-		return "성공";
-	}
-	
+
 	@GetMapping("/me")
 	public MemberResponse me(HttpServletRequest httpServletRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
