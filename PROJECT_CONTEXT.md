@@ -10,11 +10,11 @@ _Last updated: 2026-06-24 (Asia/Seoul)_
 - Project name: `jpa-prac`
 - Main purpose: Java + Spring + MySQL practice project
 - Long-term purpose: Grow into a portfolio-level, production-minded Spring web application
-- Main domains: `member`, `product`, `orders`, `order_item`, and basic `login`
+- Main domains: `member`, `product`, `orders`, `order_item`, and custom session-based `login`
 - User language: Korean
-- Preferred assistant response style: Korean explanation + Java/Spring code examples + direct code review
+- Preferred assistant style: Korean explanation, Java/Spring examples, direct code review, incremental production-minded guidance
 
-This project is being developed step by step to study real backend structure, JPA relationships, business rules, exception handling, and authentication.
+The project is being developed step by step to study Spring MVC, JPA relationships, DTO design, business rules, exception handling, and authentication/authorization.
 
 ---
 
@@ -72,15 +72,21 @@ Current implemented features include:
 - Product stock decrease and restore logic
 - Global exception handling with `BusinessException`, `ErrorCode`, and `ErrorResponse`
 - JPA auditing with `BaseTimeEntity`
-- Basic custom session-based login and logout
+- Basic custom `HttpSession` login/logout
 - Login request validation with `@NotBlank`, `@Email`, and `@Valid`
 - Reusable session lookup helper: `SessionUtil.getLoginMemberId(HttpServletRequest)`
 - Current logged-in member lookup endpoint: `GET /members/me`
 - Current logged-in member order lookup endpoint: `GET /members/me/orders`
 - Session-based order creation through `POST /orders`
 - `OrderCreateRequest` no longer accepts `memberId`; the order member is derived from the session
+- Order cancellation is restricted to the logged-in order owner
+- Cancel endpoint is semantically named: `POST /orders/{orderId}/cancel`
+- Order detail lookup is restricted to the logged-in order owner
+- Order detail response includes order items and total order price
+- `OrderItem` stores `unitPrice` and `count`; item/order totals are calculated from those values
 - Default newly created member role changed from `ADMIN` to `USER`
 - Login-required exception flow using `ErrorCode.LOGIN_REQUIRED` and `LoginRequiredException`
+- Order authorization exception flow using forbidden error codes/exceptions
 
 ---
 
@@ -88,7 +94,7 @@ Current implemented features include:
 
 Current authentication is a learning-stage custom `HttpSession` implementation, not yet Spring Security-based.
 
-Current authentication/user endpoints:
+Current authentication/current-user endpoints:
 
 ```text
 POST /members/login
@@ -97,10 +103,12 @@ GET  /members/me
 GET  /members/me/orders
 ```
 
-Current session-protected business endpoint:
+Current session-protected order endpoints:
 
 ```text
 POST /orders
+GET  /orders/{orderId}
+POST /orders/{orderId}/cancel
 ```
 
 Current login flow:
@@ -126,66 +134,44 @@ Current logout flow:
 4. The login state for that browser session is removed.
 ```
 
-Current `/members/me` flow:
-
-```text
-1. Client sends GET /members/me.
-2. MemberController calls SessionUtil.getLoginMemberId(request).
-3. SessionUtil calls request.getSession(false).
-4. If no session exists, LoginRequiredException is thrown.
-5. SessionUtil reads SessionConst.LOGIN_MEMBER_ID from session.
-6. If no login member id exists, LoginRequiredException is thrown.
-7. MemberService finds the current member by id.
-8. Controller returns MemberResponse.
-```
-
-Current `/members/me/orders` flow:
-
-```text
-1. Client sends GET /members/me/orders.
-2. MemberController obtains the login member id through SessionUtil.
-3. OrderService finds orders belonging to the login member id.
-4. Controller returns List<OrdersResponse>.
-```
-
-Current session-based order creation flow:
-
-```text
-1. Client sends POST /orders with JSESSIONID.
-2. Request body contains productNumber and count only.
-3. OrdersController obtains login member id through SessionUtil.
-4. If the client is not logged in, LoginRequiredException is thrown.
-5. OrderService.createOrder(memberId, requestList) creates the order for the session member.
-6. OrderCreateRequest no longer accepts memberId from the client.
-```
-
 Current session key:
 
 ```java
 SessionConst.LOGIN_MEMBER_ID = "login_member_id";
 ```
 
+Current `SessionUtil` role:
+
+```text
+1. Controller receives HttpServletRequest.
+2. Controller calls SessionUtil.getLoginMemberId(request).
+3. SessionUtil calls request.getSession(false), so it does not create a new session for unauthenticated users.
+4. If no session exists, LoginRequiredException is thrown.
+5. If SessionConst.LOGIN_MEMBER_ID does not exist, LoginRequiredException is thrown.
+6. Otherwise, the login member id is returned to the controller.
+```
+
 Current design decisions:
 
 - `SessionConst` is placed in `kr.co.prac.global.session`.
-- `LoginResponse.memberId` exists for server-side session storage but is hidden from JSON response with `@JsonIgnore`.
-- `ErrorCode.INVALID_PASSWORD` uses `HttpStatus.UNAUTHORIZED`.
-- `ErrorCode.LOGIN_REQUIRED` uses `HttpStatus.UNAUTHORIZED`.
-- `InvalidPasswordException` delegates to `ErrorCode.INVALID_PASSWORD`.
-- `LoginRequiredException` delegates to `ErrorCode.LOGIN_REQUIRED`.
+- `SessionUtil` is the current learning-stage helper for extracting the login member id from session.
+- Controllers should extract session identity and pass `loginMemberId` into services.
+- Services should receive primitive/domain identifiers such as `orderId`, `loginMemberId`, not `HttpServletRequest`.
 - Login currently uses plain password comparison as a learning-stage implementation.
 - `GET /members/me` is used instead of `GET /me` for now to keep beginner-stage API naming consistent with existing member endpoints.
 - `GET /members/me/orders` is used for current-user order lookup.
-- `SessionUtil` is currently used as the reusable helper for extracting the login member id from the session.
-- `POST /orders` now requires login and derives the order member from the session.
+- `POST /orders` requires login and derives the order member from session.
+- `GET /orders/{orderId}` requires login and only allows the owner to view the detail.
+- `POST /orders/{orderId}/cancel` requires login and only allows the owner to cancel.
 
 Confirmed remaining cleanup:
 
 - Password comparison should later be replaced with `PasswordEncoder.matches()`.
 - `data.sql` role values are now quoted; password seed values should also preferably be single-quoted strings.
-- Order cancel logic should next verify that the order belongs to the logged-in member before cancellation.
-- `GET /members/{memberId}/orders` still exists and should later be reviewed or restricted because logged-in user APIs should prefer session identity.
+- `GET /members/{memberId}/orders` still exists and should later be reviewed, restricted, or treated as admin-only because logged-in user APIs should prefer session identity.
+- `GET /orders` currently exposes all orders; later decide whether this should be admin-only or removed from normal user API.
 - `SessionUtil` is acceptable for the current learning stage; later compare it with argument resolver, interceptor, Spring Security principal, or a dedicated authentication abstraction.
+- Some Korean comments/messages may display as mojibake in Git Bash/diff output; later normalize file encoding/messages if needed.
 
 ---
 
@@ -193,9 +179,9 @@ Confirmed remaining cleanup:
 
 ### Member
 
-A member represents a user/customer-like entity and is now becoming the authentication subject.
+A member represents a user/customer-like entity and is now also the authentication subject.
 
-Known fields now include or are expected to include:
+Known fields include or are expected to include:
 
 - `number`
 - `name`
@@ -215,21 +201,73 @@ Important future direction:
 
 ### Product
 
-Product stock changes through domain methods. Future work includes product detail, admin CRUD, search, pagination, and authorization.
+Product stock changes through domain methods.
+
+Current order behavior:
+
+- Order creation decreases product stock.
+- Order cancellation restores product stock.
+
+Future work:
+
+- Product detail
+- Admin product CRUD
+- Search/pagination/category
+- Authorization for product management
 
 ### Orders
 
-Orders currently support list/detail/create/cancel. Current-user order lookup and order creation now use session identity. Future work should restrict order cancellation to the logged-in order owner and prefer `POST /orders/{orderId}/cancel` for cancellation semantics.
+Orders currently support:
+
+- List
+- Owner-restricted detail
+- Session-member-based creation
+- Owner-restricted cancellation
+- Current-user order lookup through `GET /members/me/orders`
+
+Important current behavior:
+
+- `POST /orders` does not accept `memberId` in request body.
+- `POST /orders` uses `SessionUtil` to obtain `loginMemberId`.
+- `GET /orders/{orderId}` uses `loginMemberId` to verify the order owner.
+- `POST /orders/{orderId}/cancel` uses `loginMemberId` to verify the order owner.
+- Unauthorized order access/cancel throws domain/business exceptions using `HttpStatus.FORBIDDEN`.
+
+Future work:
+
+- Decide whether `GET /orders` should be admin-only.
+- Decide whether `GET /members/{memberId}/orders` should remain, become admin-only, or be removed.
+- Consider returning an updated response after cancel instead of `void`.
 
 ### OrderItem
 
-OrderItem connects Orders and Product. Future work should return order items in detail responses and watch for lazy loading/N+1 problems.
+OrderItem connects Orders and Product.
+
+Current price model:
+
+```text
+OrderItem.unitPrice = product price at order time
+OrderItem.count = ordered quantity
+OrderItemResponse.totalPrice = unitPrice * count
+OrderDetailResponse.totalPrice = sum of item total prices
+```
+
+Important reasoning:
+
+- Store order-time unit price in `OrderItem`, not only current `Product.price`.
+- Product price may change later, but past order detail must preserve the price at the time of order.
+- Storing `unitPrice` and `count` is cleaner than storing only line total because line total can be calculated.
+
+Future work:
+
+- Consider fetch join or DTO projection later to avoid lazy loading/N+1 issues.
+- Consider naming API response field as `unitPrice` instead of `productPrice` for clarity if not already done locally.
 
 ---
 
 ## 6. Current API Direction
 
-Current/expected API shape:
+Current API shape:
 
 ```text
 GET    /members
@@ -237,19 +275,19 @@ POST   /members
 GET    /members/{memberId}
 PUT    /members/{memberId}
 DELETE /members/{memberId}
-GET    /members/{memberId}/orders
+GET    /members/{memberId}/orders       # legacy/path-variable based; review later
 GET    /members/me
-GET    /members/me/orders
+GET    /members/me/orders               # preferred current-user order list
 
 POST   /members/login
 POST   /members/logout
 
 GET    /products
 
-GET    /orders
-GET    /orders/{orderId}
-POST   /orders        # login required; member id comes from session
-POST   /orders/{orderId}  # currently used for cancel; should later become /orders/{orderId}/cancel
+GET    /orders                          # all orders; review/admin-only later
+GET    /orders/{orderId}                # login required; owner only
+POST   /orders                          # login required; member id from session
+POST   /orders/{orderId}/cancel         # login required; owner only
 ```
 
 Recommended future API direction:
@@ -260,17 +298,17 @@ POST   /members/login
 POST   /members/logout
 GET    /members/me
 GET    /members/me/orders or GET /me/orders
-
-POST   /orders/{orderId}/cancel
+GET    /orders/{orderId}                # owner-only or admin
+POST   /orders/{orderId}/cancel         # owner-only or admin
 ```
 
 Important API direction after login:
 
-- For user-specific APIs, avoid trusting `memberId` from the URL or request body.
-- Prefer deriving the current user from the session.
-- `GET /members/me/orders` now exists and should be preferred over `GET /members/{memberId}/orders` for logged-in user order lookup.
-- `POST /orders` now derives the order owner from the session instead of the request body.
-- Next high-priority change: order cancellation must verify that the target order belongs to the logged-in member.
+- For user-specific APIs, avoid trusting `memberId` from URL or request body.
+- Prefer deriving the current user from session.
+- `GET /members/me/orders` should be preferred over `GET /members/{memberId}/orders` for normal logged-in users.
+- `POST /orders` now derives the order owner from session instead of request body.
+- Order detail and order cancellation are now protected by owner checks.
 
 ---
 
@@ -301,7 +339,8 @@ Architecture guidance:
 
 - Keep controllers thin.
 - Keep business rules in services/domain methods.
-- Keep session/request handling near the web layer while learning session mechanics.
+- Keep web/session handling in the controller layer while learning session mechanics.
+- Do not pass `HttpServletRequest` into service methods.
 - Use DTOs instead of exposing entities.
 - Use service interfaces in controllers where available instead of directly depending on implementation classes.
 - Do not introduce large package restructuring in the same commit as a small feature.
@@ -319,18 +358,19 @@ Session first -> JWT later
 Detailed order:
 
 ```text
-1. Basic HttpSession login flow.
-2. JSESSIONID cookie behavior.
-3. Logout with session.invalidate().
-4. Session timeout.
-5. Current logged-in user endpoint. [DONE: GET /members/me]
-6. Current-user order lookup. [DONE: GET /members/me/orders]
-7. Use session identity in business APIs. [IN PROGRESS: POST /orders uses session member id]
-8. Restrict business commands by owner, starting with order cancellation.
-9. Multi-server session limitation.
-10. Redis Session comparison.
-11. JWT comparison.
-12. JWT implementation after session fundamentals are understood.
+1. Basic HttpSession login flow. [DONE]
+2. JSESSIONID cookie behavior. [DONE/learning]
+3. Logout with session.invalidate(). [DONE]
+4. Current logged-in user endpoint. [DONE: GET /members/me]
+5. Current-user order lookup. [DONE: GET /members/me/orders]
+6. Use session identity in order creation. [DONE: POST /orders]
+7. Restrict order cancellation by owner. [DONE]
+8. Restrict order detail by owner. [DONE]
+9. Review legacy memberId/path-variable APIs.
+10. Multi-server session limitation.
+11. Redis Session comparison.
+12. JWT comparison.
+13. JWT implementation after session fundamentals are understood.
 ```
 
 Do not recommend direct JWT-first implementation unless the user explicitly changes direction.
@@ -342,43 +382,28 @@ Do not recommend direct JWT-first implementation unless the user explicitly chan
 Current best next feature:
 
 ```text
-Restrict order cancellation to the logged-in order owner
+Review and restrict legacy memberId/order list APIs
 ```
 
-Recently completed session-identity features:
+The highest-priority security/business flow has been improved:
 
 ```text
-GET  /members/me
-GET  /members/me/orders
-POST /orders
-```
-
-Purpose already achieved:
-
-- Confirm that session login works across multiple requests.
-- Retrieve `SessionConst.LOGIN_MEMBER_ID` through `SessionUtil`.
-- Load the current `Member` from DB.
-- Return the current logged-in member as `MemberResponse`.
-- Return the current logged-in member's order list through `GET /members/me/orders`.
-- Create orders only for the logged-in session member through `POST /orders`.
-- Remove client-controlled `memberId` from `OrderCreateRequest`.
-
-Current session identity flow:
-
-```text
-JSESSIONID -> HttpSession -> login_member_id -> SessionUtil -> Service layer method argument
+POST /orders                     # login required; session member creates order
+GET  /orders/{orderId}           # login required; owner-only detail
+POST /orders/{orderId}/cancel    # login required; owner-only cancel
 ```
 
 Recommended next order:
 
 ```text
-1. Manually verify login -> /members/me -> /members/me/orders -> POST /orders -> logout.
-2. Change order cancellation to use session identity.
-3. Verify that a user cannot cancel another member's order.
-4. Rename the cancel endpoint from POST /orders/{orderId} to POST /orders/{orderId}/cancel.
-5. Add password encoding with BCrypt.
-6. Add tests later as a separate learning block.
-7. Then consider Spring Security session login.
+1. Manually verify login -> POST /orders -> GET /orders/{orderId} -> POST /orders/{orderId}/cancel.
+2. Verify that another logged-in member cannot view or cancel the order.
+3. Review GET /members/{memberId}/orders and decide whether to remove, restrict, or keep as admin-only later.
+4. Review GET /orders and decide whether it should become admin-only later.
+5. Rename/clarify response field productPrice -> unitPrice if not already completed locally.
+6. Add BCrypt/password encoder.
+7. Add tests later as a separate learning block.
+8. Then consider Spring Security session login.
 ```
 
 Testing is intentionally postponed for now because the user wants to learn tests later in one focused block.
@@ -397,85 +422,56 @@ When the user starts the testing block, recommended tests include:
 - Successful login creates session and stores `SessionConst.LOGIN_MEMBER_ID`.
 - Logout invalidates an existing session.
 - Logout without session does not create a new session.
-- `/members/me` returns current member when session exists.
-- `/members/me` returns unauthorized error when session does not exist.
-- `/members/me` returns unauthorized error after logout.
-- `/members/me/orders` returns only the current member's orders.
-- `POST /orders` fails with unauthorized error when no login session exists.
-- `POST /orders` creates an order for the session member and ignores any client-supplied member identity because the DTO no longer accepts `memberId`.
-- Order cancellation fails when the target order does not belong to the logged-in member, after that feature is implemented.
-
-Do not force tests into the current small feature/refactoring steps unless the user asks.
-
----
-
-## 11. Production-Minded Standards
-
-### Security
-
-- Do not store raw passwords long term.
-- Do not expose sensitive fields.
-- Do not trust client-provided user id after login.
-- Use session/authenticated principal for user-specific operations.
-- Separate user/admin permissions.
-- Prefer generic login failure messages in production.
-
-### Database
-
-- Do not use `ddl-auto=create` in production.
-- Use migration tools later.
-- Add unique constraints for email.
-- Add indexes where needed.
-
-### Code
-
-- Keep controllers thin.
-- Keep business rules in service/domain methods.
-- Avoid entity exposure.
-- Use DTOs.
-- Add tests when fixing bugs or adding features, but respect the current learning decision to postpone testing.
+- `GET /members/me` returns current member when session exists.
+- `GET /members/me` returns unauthorized error when session does not exist.
+- `GET /members/me/orders` returns only orders for the session member.
+- `POST /orders` returns 401 when no session exists.
+- `POST /orders` creates the order for the session member.
+- `GET /orders/{orderId}` returns detail for owner.
+- `GET /orders/{orderId}` returns 403 for non-owner.
+- `POST /orders/{orderId}/cancel` cancels owner order.
+- `POST /orders/{orderId}/cancel` returns 403 for non-owner.
+- Cancelled order restores product stock.
+- Already cancelled order cannot be cancelled again.
 
 ---
 
-## 12. Assistant Instructions for Future Conversations
+## 11. Important Current Warnings
 
-When the user asks about this project:
-
-1. Assume the project is `jpa-prac`.
-2. Answer in Korean.
-3. Provide Java/Spring code when useful.
-4. Connect explanations to the current product/member/order/login domain.
-5. Review code with production-readiness and portfolio-readiness in mind.
-6. Recommend incremental changes instead of large rewrites.
-7. For authentication, follow `Session first -> JWT later`.
-8. `/members/me` is now implemented.
-9. `/members/me/orders` is now implemented.
-10. `POST /orders` now uses session member id instead of request-body `memberId`.
-11. The immediate next authentication/business step is restricting order cancellation to the logged-in order owner.
-12. Do not recommend tests immediately unless the user asks; the user wants to learn tests later in one focused block.
+- Plain password comparison is still used.
+- Passwords should later be encoded with BCrypt.
+- Some list endpoints still expose broad data and need an admin/owner design decision later.
+- Current custom session implementation is appropriate for learning but should later be compared with Spring Security.
+- Do not jump to JWT yet.
+- Do not add tests now unless the user explicitly starts the testing block.
 
 ---
 
-## 13. What To Check Later
+## 12. Handoff Summary
 
-When more precision is needed, check latest GitHub source code, especially:
+Use this when continuing the project in a new chat:
 
-- `LoginController`
-- `LoginServiceImpl`
-- `LoginRequest`
-- `LoginResponse`
-- `SessionConst`
-- `SessionUtil`
-- `MemberController`
-- `OrdersController`
-- `OrderCreateRequest`
-- `OrderService`
-- `OrderServiceImpl`
-- `Member` entity
-- `MemberService`
-- `ErrorCode`
-- `LoginRequiredException`
-- `GlobalExceptionHandler`
-- `data.sql`
-- local run logs
-- test output when testing starts
+```text
+This project is jpa-prac, a Java 21 + Spring Boot + MySQL practice project.
+The goal is to grow it into a portfolio-level Spring web application.
+The main domains are Member, Product, Orders, OrderItem, and custom Login/session.
+
+Current auth state:
+- Custom HttpSession login/logout is implemented.
+- SessionConst.LOGIN_MEMBER_ID stores the authenticated member id.
+- SessionUtil.getLoginMemberId(request) extracts the login member id or throws LoginRequiredException.
+- GET /members/me is implemented.
+- GET /members/me/orders is implemented.
+- POST /orders uses session member id; OrderCreateRequest no longer accepts memberId.
+- GET /orders/{orderId} is owner-restricted.
+- POST /orders/{orderId}/cancel is owner-restricted.
+- OrderItem stores unitPrice and count; order item total and order total are calculated in response DTOs.
+- Tests are postponed for later.
+
+Current next priority:
+1. Manually verify owner restrictions for order detail/cancel.
+2. Review legacy GET /members/{memberId}/orders and broad GET /orders APIs.
+3. Add BCrypt/password encoder later.
+4. Learn tests later in one focused block.
+5. Compare Spring Security session login, Redis Session, and JWT later.
+```

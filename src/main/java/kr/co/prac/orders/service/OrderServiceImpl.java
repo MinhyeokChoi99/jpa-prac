@@ -81,7 +81,7 @@ public class OrderServiceImpl implements OrderService{
 				.map(OrderItemResponse::new)
 				.toList();
 		
-		return new OrderDetailResponse(order,orderItems);
+		return new OrderDetailResponse(order, orderItems);
 		
 	}
 

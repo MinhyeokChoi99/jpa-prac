@@ -8,16 +8,16 @@ public class OrderItemResponse {
 
 	private Long number;
 	private String productName;
-	private int productPrice;
+	private int unitPrice;
 	private int count;
 	private int totalPrice;
 
 	public OrderItemResponse(OrderItem orderItem) {
 		this.number = orderItem.getNumber();
 		this.productName = orderItem.getProduct().getName();
-		this.productPrice = orderItem.getUnitPrice();
+		this.unitPrice = orderItem.getUnitPrice();
 		this.count = orderItem.getCount();
-		this.totalPrice = productPrice * count;
+		this.totalPrice = unitPrice * count;
 	}
 
 }
