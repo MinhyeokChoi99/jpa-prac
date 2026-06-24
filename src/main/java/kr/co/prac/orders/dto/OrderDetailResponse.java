@@ -14,6 +14,7 @@ public class OrderDetailResponse {
 	private LocalDateTime orderDate;
 	private OrderStatus status;
 	private List<OrderItemResponse> orderItems;
+	private int totalPrice;
 	
 	public OrderDetailResponse(Orders orders, List<OrderItemResponse> orderItems) {
 		this.number = orders.getNumber();
@@ -21,6 +22,8 @@ public class OrderDetailResponse {
 		this.orderDate = orders.getOrderDate();
 		this.status = orders.getStatus();
 		this.orderItems = orderItems;
+		this.totalPrice = orderItems.stream().mapToInt(i->i.getTotalPrice()).sum();
+		
 	}
 	
 	

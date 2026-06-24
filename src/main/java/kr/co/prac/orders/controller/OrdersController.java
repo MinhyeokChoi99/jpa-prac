@@ -30,8 +30,9 @@ public class OrdersController {
 	}
 	// 단건
 	@GetMapping("/orders/{orderId}")
-	public OrderDetailResponse orderById(@PathVariable Long orderId) {
-		return orderService.findOne(orderId);
+	public OrderDetailResponse orderById(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
+		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
+		return orderService.findOne(orderId,loginMemberId);
 	}
 	
 	// 생성

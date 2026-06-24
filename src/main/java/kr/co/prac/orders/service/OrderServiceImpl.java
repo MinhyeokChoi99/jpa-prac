@@ -18,6 +18,7 @@ import kr.co.prac.orders.entity.Orders;
 import kr.co.prac.orders.exception.AlreadyCancelledOrderException;
 import kr.co.prac.orders.exception.EmptyItemOrderException;
 import kr.co.prac.orders.exception.NotAuthorizedCancelException;
+import kr.co.prac.orders.exception.NotAuthorizedMemberException;
 import kr.co.prac.orders.exception.OrderNotFoundException;
 import kr.co.prac.orders.repository.OrderItemRepository;
 import kr.co.prac.orders.repository.OrdersRepository;
@@ -58,7 +59,7 @@ public class OrderServiceImpl implements OrderService{
 			orderItem.setCount(orderCreateRequest.getCount());
 			orderItem.setOrders(savedOrder);
 			orderItem.setProduct(product);
-			orderItem.setOrderPrice(product.getPrice() * orderCreateRequest.getCount());
+			orderItem.setUnitPrice(product.getPrice());
 			orderItemRepository.save(orderItem);
 		}
 		
@@ -68,8 +69,12 @@ public class OrderServiceImpl implements OrderService{
 
 	@Override// 단건 조회
 	@Transactional(readOnly = true)
-	public OrderDetailResponse findOne(Long orderId) {
+	public OrderDetailResponse findOne(Long orderId, Long loginMemberId) {
 		Orders order = ordersRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
+		if(!order.getMember().getNumber().equals(loginMemberId)) {
+			throw new NotAuthorizedMemberException();
+		}
+		
 		List<OrderItemResponse> orderItems = orderItemRepository.
 				findByOrdersNumber(orderId)
 				.stream()

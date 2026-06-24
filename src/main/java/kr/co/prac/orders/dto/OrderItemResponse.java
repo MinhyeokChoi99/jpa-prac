@@ -7,15 +7,17 @@ import lombok.Getter;
 public class OrderItemResponse {
 
 	private Long number;
-	private String product;
-	private int orderPrice;
+	private String productName;
+	private int productPrice;
 	private int count;
+	private int totalPrice;
 
 	public OrderItemResponse(OrderItem orderItem) {
 		this.number = orderItem.getNumber();
-		this.product = orderItem.getProduct().getName();
-		this.orderPrice = orderItem.getOrderPrice();
+		this.productName = orderItem.getProduct().getName();
+		this.productPrice = orderItem.getUnitPrice();
 		this.count = orderItem.getCount();
+		this.totalPrice = productPrice * count;
 	}
 
 }

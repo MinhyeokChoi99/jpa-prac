@@ -10,7 +10,7 @@ public interface OrderService {
 	
 	OrderResponse createOrder(Long memberId, List<OrderCreateRequest> orderCreateRequests);
 	
-	OrderDetailResponse findOne(Long orderId);
+	OrderDetailResponse findOne(Long orderId,Long loginMemberId);
 	
 	List<OrderResponse> memberIdFound(Long memberId);
 	
