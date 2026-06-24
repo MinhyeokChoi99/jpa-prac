@@ -13,11 +13,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductController {
 	
-	private final ProductService productServiceImpl;
+	private final ProductService productService;
 	
 	@GetMapping("/products")
 	public List<ProductResponse> productList() {
-		return productServiceImpl.productList();
+		return productService.productList();
 	}
 	
 

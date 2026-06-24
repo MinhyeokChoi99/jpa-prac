@@ -23,11 +23,6 @@ public class OrdersController {
 	
 	private final OrderService orderService;
 	
-	// 전체
-	@GetMapping("/orders")
-	public List<OrderResponse> orderList() {
-		return orderService.findAll();
-	}
 	// 단건
 	@GetMapping("/orders/{orderId}")
 	public OrderDetailResponse orderById(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
@@ -41,7 +36,7 @@ public class OrdersController {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
 		return orderService.createOrder(loginMemberId, orderCreateRequest);
 	}
-	// 삭제
+	// 취소
 	@PostMapping("/orders/{orderId}/cancel")
 	public void cancelOrder(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);

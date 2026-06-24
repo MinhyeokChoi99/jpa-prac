@@ -60,13 +60,6 @@ public class MemberController {
 		return "성공";
 	}
 	
-	// 맴버기준조회
-	@GetMapping("/{memberId}/orders")
-	public List<OrderResponse> orderByMemberId(@PathVariable Long memberId) {
-		List<OrderResponse> memberIdFound = orderService.memberIdFound(memberId);
-		return memberIdFound;
-	}
-
 	@GetMapping("/me")
 	public MemberResponse me(HttpServletRequest httpServletRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
