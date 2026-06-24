@@ -4,8 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import kr.co.prac.admin.exception.NotAuthorizedAdminException;
 import kr.co.prac.login.exception.LoginRequiredException;
-import kr.co.prac.member.service.MemberService;
-import lombok.RequiredArgsConstructor;
 
 
 public class SessionUtil {

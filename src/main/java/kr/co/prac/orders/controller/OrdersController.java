@@ -27,7 +27,7 @@ public class OrdersController {
 	@GetMapping("/orders/{orderId}")
 	public OrderDetailResponse orderById(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
-		return orderService.findOne(orderId,loginMemberId);
+		return orderService.findOne(orderId, loginMemberId);
 	}
 	
 	// 생성
@@ -40,7 +40,7 @@ public class OrdersController {
 	@PostMapping("/orders/{orderId}/cancel")
 	public void cancelOrder(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
-		orderService.cancelOrder(orderId,loginMemberId);
+		orderService.cancelOrder(orderId, loginMemberId);
 	}
 	
 

@@ -5,9 +5,7 @@ import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 import kr.co.prac.global.session.SessionUtil;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,20 +30,14 @@ public class MemberController {
 	private final OrderService orderService;
 	
 	@PostMapping
-	public MemberResponse apply(@RequestBody MemberCreateRequest mr) {
-		MemberResponse appliedMember = memberService.apply(mr);
-		return appliedMember;
+	public MemberResponse join(@RequestBody MemberCreateRequest memberCreateRequest) {
+        return memberService.apply(memberCreateRequest);
 	}
 	
-	@GetMapping("/{number}")
-	public MemberResponse find(@PathVariable Long number) {
-		MemberResponse mr = memberService.find(number);
-		return mr;
-	}
-	
-	@PutMapping("/{number}")
-	public MemberResponse update(@PathVariable Long number, @RequestBody MemberUpdateRequest memberUpdateRequest) {
-		return memberService.update(number, memberUpdateRequest);
+	@PutMapping("/me")
+	public MemberResponse updateMe(@RequestBody MemberUpdateRequest memberUpdateRequest, HttpServletRequest httpServletRequest) {
+		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
+		return memberService.update(loginMemberId, memberUpdateRequest);
 	}
 
 	@GetMapping("/me")
