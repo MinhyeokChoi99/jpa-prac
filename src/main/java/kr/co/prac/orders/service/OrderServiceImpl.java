@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import kr.co.prac.member.exception.MemberNotFoundException;
 import kr.co.prac.member.repository.MemberRepository;
 import kr.co.prac.orders.dto.OrderCreateRequest;
-import kr.co.prac.orders.dto.OrdersResponse;
+import kr.co.prac.orders.dto.OrderDetailResponse;
+import kr.co.prac.orders.dto.OrderItemResponse;
+import kr.co.prac.orders.dto.OrderResponse;
 import kr.co.prac.orders.entity.OrderItem;
 import kr.co.prac.orders.entity.OrderStatus;
 import kr.co.prac.orders.entity.Orders;
@@ -37,7 +39,7 @@ public class OrderServiceImpl implements OrderService{
 
 	
 	@Override // 주문생성 -> 여러건 처리할수있게 수정
-	public OrdersResponse createOrder(Long memberId, List<OrderCreateRequest> orderCreateRequests) {
+	public OrderResponse createOrder(Long memberId, List<OrderCreateRequest> orderCreateRequests) {
 		// 빈리스트로 요청이 들어왔을 경우 검증
 		if(orderCreateRequests == null || orderCreateRequests.isEmpty()) {
 			throw new EmptyItemOrderException();
@@ -60,33 +62,38 @@ public class OrderServiceImpl implements OrderService{
 			orderItemRepository.save(orderItem);
 		}
 		
-		return new OrdersResponse(savedOrder);
+		return new OrderResponse(savedOrder);
 	}
 
 
 	@Override// 단건 조회
 	@Transactional(readOnly = true)
-	public OrdersResponse findOne(Long orderId) {
+	public OrderDetailResponse findOne(Long orderId) {
 		Orders order = ordersRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
-		OrdersResponse ordersResponse = new OrdersResponse(order);
-		return ordersResponse;
+		List<OrderItemResponse> orderItems = orderItemRepository.
+				findByOrdersNumber(orderId)
+				.stream()
+				.map(OrderItemResponse::new)
+				.toList();
+		
+		return new OrderDetailResponse(order,orderItems);
 		
 	}
 
 
 	@Override// 전체조회
 	@Transactional(readOnly = true)
-	public List<OrdersResponse> findAll() {
-		List<OrdersResponse> ordersResponses = new ArrayList<>();
+	public List<OrderResponse> findAll() {
+		List<OrderResponse> orderResponses = new ArrayList<>();
 		for(Orders order : ordersRepository.findAll()) {
-			ordersResponses.add(new OrdersResponse(order));
+			orderResponses.add(new OrderResponse(order));
 		}
-		return ordersResponses;
+		return orderResponses;
 	}
 
 
 	@Override// 삭제
-	public void deleteOrders(Long ordersId, Long loginMemberId) {
+	public void cancelOrder(Long ordersId, Long loginMemberId) {
 		Orders orders = ordersRepository.findById(ordersId).orElseThrow(OrderNotFoundException::new);
 		if(orders.getStatus() == OrderStatus.CANCEL) {
 			throw new AlreadyCancelledOrderException();
@@ -106,9 +113,9 @@ public class OrderServiceImpl implements OrderService{
 
 
 	@Override
-	public List<OrdersResponse> memberIdFound(Long memberId) {
+	public List<OrderResponse> memberIdFound(Long memberId) {
 		List<Orders> memberOrders = ordersRepository.findByMemberNumber(memberId);
-		List<OrdersResponse> list = memberOrders.stream().map(OrdersResponse::new).toList();
+		List<OrderResponse> list = memberOrders.stream().map(OrderResponse::new).toList();
 		return list;
 	}
 	

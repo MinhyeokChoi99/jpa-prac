@@ -18,7 +18,7 @@ import kr.co.prac.member.dto.MemberCreateRequest;
 import kr.co.prac.member.dto.MemberResponse;
 import kr.co.prac.member.dto.MemberUpdateRequest;
 import kr.co.prac.member.service.MemberService;
-import kr.co.prac.orders.dto.OrdersResponse;
+import kr.co.prac.orders.dto.OrderResponse;
 import kr.co.prac.orders.service.OrderService;
 import lombok.RequiredArgsConstructor;
 
@@ -62,8 +62,8 @@ public class MemberController {
 	
 	// 맴버기준조회
 	@GetMapping("/{memberId}/orders")
-	public List<OrdersResponse> orderByMemberId(@PathVariable Long memberId) {
-		List<OrdersResponse> memberIdFound = orderService.memberIdFound(memberId);
+	public List<OrderResponse> orderByMemberId(@PathVariable Long memberId) {
+		List<OrderResponse> memberIdFound = orderService.memberIdFound(memberId);
 		return memberIdFound;
 	}
 
@@ -74,7 +74,7 @@ public class MemberController {
 	}
 
 	@GetMapping("/me/orders")
-	public List<OrdersResponse> memberOrderList(HttpServletRequest httpServletRequest) {
+	public List<OrderResponse> memberOrderList(HttpServletRequest httpServletRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
 		return orderService.memberIdFound(loginMemberId);
 

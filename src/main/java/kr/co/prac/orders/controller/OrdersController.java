@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import kr.co.prac.orders.dto.OrderCreateRequest;
-import kr.co.prac.orders.dto.OrdersResponse;
+import kr.co.prac.orders.dto.OrderDetailResponse;
+import kr.co.prac.orders.dto.OrderResponse;
 import kr.co.prac.orders.service.OrderService;
 import lombok.RequiredArgsConstructor;
 
@@ -24,26 +25,26 @@ public class OrdersController {
 	
 	// 전체
 	@GetMapping("/orders")
-	public List<OrdersResponse> orderList() {
+	public List<OrderResponse> orderList() {
 		return orderService.findAll();
 	}
 	// 단건
 	@GetMapping("/orders/{orderId}")
-	public OrdersResponse orderById(@PathVariable Long orderId) {
+	public OrderDetailResponse orderById(@PathVariable Long orderId) {
 		return orderService.findOne(orderId);
 	}
 	
 	// 생성
 	@PostMapping("/orders")
-	public OrdersResponse createOrder(HttpServletRequest httpServletRequest, @RequestBody List<@Valid OrderCreateRequest> orderCreateRequest) {
+	public OrderResponse createOrder(HttpServletRequest httpServletRequest, @RequestBody List<@Valid OrderCreateRequest> orderCreateRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
 		return orderService.createOrder(loginMemberId, orderCreateRequest);
 	}
 	// 삭제
-	@PostMapping("/orders/{orderId}")
-	public void deleteOrder(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
+	@PostMapping("/orders/{orderId}/cancel")
+	public void cancelOrder(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
 		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
-		orderService.deleteOrders(orderId,loginMemberId);
+		orderService.cancelOrder(orderId,loginMemberId);
 	}
 	
 

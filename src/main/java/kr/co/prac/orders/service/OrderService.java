@@ -3,17 +3,18 @@ package kr.co.prac.orders.service;
 import java.util.List;
 
 import kr.co.prac.orders.dto.OrderCreateRequest;
-import kr.co.prac.orders.dto.OrdersResponse;
+import kr.co.prac.orders.dto.OrderDetailResponse;
+import kr.co.prac.orders.dto.OrderResponse;
 
 public interface OrderService {
 	
-	OrdersResponse createOrder(Long memberId, List<OrderCreateRequest> orderCreateRequests);
+	OrderResponse createOrder(Long memberId, List<OrderCreateRequest> orderCreateRequests);
 	
-	OrdersResponse findOne(Long orderId);
+	OrderDetailResponse findOne(Long orderId);
 	
-	List<OrdersResponse> memberIdFound(Long memberId);
+	List<OrderResponse> memberIdFound(Long memberId);
 	
-	List<OrdersResponse> findAll();
+	List<OrderResponse> findAll();
 	
-	void deleteOrders(Long ordersId, Long loginMemberId);
+	void cancelOrder(Long ordersId, Long loginMemberId);
 }
