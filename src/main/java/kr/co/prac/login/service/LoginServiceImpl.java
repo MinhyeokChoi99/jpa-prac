@@ -1,9 +1,7 @@
 package kr.co.prac.login.service;
 
-import java.util.Optional;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import kr.co.prac.login.dto.LoginRequest;
@@ -19,13 +17,14 @@ import lombok.RequiredArgsConstructor;
 public class LoginServiceImpl implements LoginService{
 
 	private final MemberRepository memberRepository;
+	private final PasswordEncoder passwordEncoder;
 	@Override
 	public LoginResponse login(LoginRequest loginRequest) {
-		Optional<Member> memberOptional = memberRepository.findByEmail(loginRequest.getEmail());
-		Member member = memberOptional.orElseThrow(MemberNotFoundException::new);
+		Member member = memberRepository.findByEmail(loginRequest.getEmail()).orElseThrow(MemberNotFoundException::new);
 		String requestPassword = loginRequest.getPassword();
 		String dbPassword = member.getPassword();
-		if(!requestPassword.equals(dbPassword)) {
+		
+		if(!passwordEncoder.matches(requestPassword, dbPassword)) {
 			throw new InvalidPasswordException();
 		}
 		return new LoginResponse(member);

@@ -4,6 +4,7 @@ import java.util.List;
 
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import kr.co.prac.global.session.SessionUtil;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +26,7 @@ public class MemberController {
 	private final OrderService orderService;
 	
 	@PostMapping
-	public MemberResponse join(@RequestBody MemberCreateRequest memberCreateRequest) {
+	public MemberResponse join(@RequestBody @Valid MemberCreateRequest memberCreateRequest) {
         return memberService.apply(memberCreateRequest);
 	}
 	

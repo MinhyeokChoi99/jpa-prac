@@ -4,11 +4,11 @@ VALUES
 ('Spring Boot Book', 42000, 79, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 ('QueryDSL Book', 38000, 47, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO member (email, name, password, role , created_at, updated_at)
+INSERT INTO member (email, name, password, role, created_at, updated_at)
 VALUES
-('kim@example.com', 'Kim', '123' ,  'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('lee@example.com', 'Lee', '456' ,  'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('park@example.com', 'Park', '789' , 'USER' ,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+('kim@example.com', 'Kim', '$2y$10$kK2fVN693tKbInVt3yUsfuI7BTTSQT9iSpp0M3z6k8HHQHPFrOOti', 'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('lee@example.com', 'Lee', '$2y$10$3bmguwJOekMKzDB0J/KbFu23wirZuXH/uAuY8JutuuyPZPztCFWAq', 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('park@example.com', 'Park', '$2y$10$LT5UKlq5wbDDAnV2ApAYteITcKdfB8U7wVgUXUmhsRX9qS50UAAeu', 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO orders (member_id, order_date, status, created_at, updated_at)
 VALUES
@@ -16,7 +16,7 @@ VALUES
 (2, CURRENT_TIMESTAMP, 'PROCESS', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (3, CURRENT_TIMESTAMP, 'CANCEL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO order_item (order_id, product_id, order_price, count, created_at, updated_at)
+INSERT INTO order_item (order_id, product_id, unit_price, count, created_at, updated_at)
 VALUES
 (1, 1, 70000, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (1, 2, 42000, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),

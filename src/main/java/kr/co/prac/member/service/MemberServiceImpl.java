@@ -4,6 +4,7 @@ import java.util.List;
 
 import kr.co.prac.member.exception.AlreadyExistMemberException;
 import kr.co.prac.member.exception.MemberNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberServiceImpl implements MemberService{
 
 	private final MemberRepository memberRepository;
+	private final PasswordEncoder passwordEncoder;
 	
 	@Override
 	public MemberResponse apply(MemberCreateRequest memberCreateRequest) {
@@ -30,6 +32,8 @@ public class MemberServiceImpl implements MemberService{
 		Member member = new Member();
 		member.setName(memberCreateRequest.getName());
 		member.setEmail(memberCreateRequest.getEmail());
+		String encodedPassword = passwordEncoder.encode(memberCreateRequest.getPassword());
+		member.setPassword(encodedPassword);
 		member.setRole(Role.USER);
 		Member savedMember = memberRepository.save(member);
 		return new MemberResponse(savedMember);
