@@ -3,8 +3,12 @@ package kr.co.prac.global.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 
 @Configuration
 public class SecurityConfig {
@@ -16,6 +20,9 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .logout(logout -> logout.disable())
+                .securityContext(securityContext ->
+                        securityContext.securityContextRepository(securityContextRepository())
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
@@ -29,8 +36,19 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/members", "/members/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/products").permitAll()
                         .anyRequest().permitAll()
+
                 );
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
     }
 }

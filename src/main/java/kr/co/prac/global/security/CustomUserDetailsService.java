@@ -8,7 +8,9 @@ import kr.co.prac.member.entity.Member;
 import kr.co.prac.member.exception.MemberNotFoundException;
 import kr.co.prac.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService{
 
