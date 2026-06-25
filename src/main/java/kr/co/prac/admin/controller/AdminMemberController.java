@@ -31,9 +31,8 @@ public class AdminMemberController {
     }
 
     @DeleteMapping("/{number}")
-    public String delete(@PathVariable Long number, HttpServletRequest httpServletRequest) {
+    public void delete(@PathVariable Long number, HttpServletRequest httpServletRequest) {
     	adminAuthService.requireAdmin(httpServletRequest);
         memberService.delete(number);
-        return "성공";
     }
 }

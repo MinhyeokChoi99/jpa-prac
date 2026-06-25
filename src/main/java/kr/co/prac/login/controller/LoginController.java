@@ -24,6 +24,7 @@ public class LoginController {
 	public LoginResponse logIn(@RequestBody @Valid LoginRequest request, HttpServletRequest httpServletRequest) {
 		LoginResponse login = loginService.login(request);
 		HttpSession session = httpServletRequest.getSession();
+		
 		session.setAttribute(SessionConst.LOGIN_MEMBER_ID, login.getMemberId());
 		return login;
 	}
