@@ -1,7 +1,6 @@
 package kr.co.prac.admin.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import kr.co.prac.admin.service.AdminAuthService;
+
 import kr.co.prac.orders.dto.OrderDetailResponse;
 import kr.co.prac.orders.dto.OrderResponse;
 import kr.co.prac.orders.service.OrderService;
@@ -19,17 +18,16 @@ import java.util.List;
 public class AdminOrderController {
 
     private final OrderService orderService;
-    private final AdminAuthService adminAuthService;
+    
 
     @GetMapping
-    public List<OrderResponse> ordersList(HttpServletRequest httpServletRequest) {
-    	adminAuthService.requireAdmin(httpServletRequest);
+    public List<OrderResponse> ordersList() {
         return orderService.findAll();
     }
 
     @GetMapping("/{orderId}")
-    public OrderDetailResponse orderDetail(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
-    	adminAuthService.requireAdmin(httpServletRequest);
+    public OrderDetailResponse orderDetail(@PathVariable Long orderId) {
+    	
         return orderService.findOneForAdmin(orderId);
     }
 }

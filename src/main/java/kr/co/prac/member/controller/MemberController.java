@@ -5,7 +5,7 @@ import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import kr.co.prac.global.session.SessionUtil;
+import kr.co.prac.global.security.SecurityUtil;
 import org.springframework.web.bind.annotation.*;
 
 import kr.co.prac.member.dto.MemberCreateRequest;
@@ -30,28 +30,29 @@ public class MemberController {
         return memberService.apply(memberCreateRequest);
 	}
 	
+	
 	@PutMapping("/me")
-	public MemberResponse updateMe(@RequestBody MemberUpdateRequest memberUpdateRequest, HttpServletRequest httpServletRequest) {
-		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
-		return memberService.update(loginMemberId, memberUpdateRequest);
+	public MemberResponse updateMe(@RequestBody MemberUpdateRequest memberUpdateRequest) {
+		Long memberId = SecurityUtil.getMemberId();
+		return memberService.update(memberId, memberUpdateRequest);
 	}
 
 	@GetMapping("/me")
-	public MemberResponse me(HttpServletRequest httpServletRequest) {
-		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
-		return memberService.find(loginMemberId);
+	public MemberResponse me() {
+		Long memberId = SecurityUtil.getMemberId();
+		return memberService.find(memberId);
 	}
 
 	@GetMapping("/me/orders")
-	public List<OrderResponse> memberOrderList(HttpServletRequest httpServletRequest) {
-		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
-		return orderService.memberIdFound(loginMemberId);
+	public List<OrderResponse> memberOrderList() {
+		Long memberId = SecurityUtil.getMemberId();
+		return orderService.memberIdFound(memberId);
 	}
 
 	@DeleteMapping("/me")
-	public void deleteMember(HttpServletRequest httpServletRequest) {
-		Long loginMemberId = SessionUtil.getLoginMemberId(httpServletRequest);
-		memberService.delete(loginMemberId);
+	public void deleteMember() {
+		Long memberId = SecurityUtil.getMemberId();
+		memberService.delete(memberId);
 	}
 	
 	

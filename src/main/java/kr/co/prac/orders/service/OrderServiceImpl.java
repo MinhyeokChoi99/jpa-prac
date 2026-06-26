@@ -39,7 +39,7 @@ public class OrderServiceImpl implements OrderService{
 
 	
 	@Override // 주문생성 -> 여러건 처리할수있게 수정
-	public OrderResponse createOrder(Long memberId, List<OrderCreateRequest> orderCreateRequests) {
+	public OrderDetailResponse createOrder(Long memberId, List<OrderCreateRequest> orderCreateRequests) {
 		// 빈리스트로 요청이 들어왔을 경우 검증
 		if(orderCreateRequests == null || orderCreateRequests.isEmpty()) {
 			throw new EmptyItemOrderException();
@@ -49,6 +49,8 @@ public class OrderServiceImpl implements OrderService{
 		order.setOrderDate(LocalDateTime.now());
 		order.setStatus(OrderStatus.READY);
 		Orders savedOrder = ordersRepository.save(order);
+		
+		List<OrderItemResponse> list = new ArrayList<>();
 		
 		for(OrderCreateRequest orderCreateRequest : orderCreateRequests) {
 			Product product = productRepository.findById(orderCreateRequest.getProductNumber()).orElseThrow(ProductNotFoundException::new);
@@ -60,9 +62,10 @@ public class OrderServiceImpl implements OrderService{
 			orderItem.setProduct(product);
 			orderItem.setUnitPrice(product.getPrice());
 			orderItemRepository.save(orderItem);
+			list.add(new OrderItemResponse(orderItem));
 		}
 		
-		return new OrderResponse(savedOrder);
+		return new OrderDetailResponse(savedOrder,list);
 	}
 
 
