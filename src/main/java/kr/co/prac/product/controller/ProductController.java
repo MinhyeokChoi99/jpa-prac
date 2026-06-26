@@ -19,6 +19,4 @@ public class ProductController {
 	public List<ProductResponse> productList() {
 		return productService.productList();
 	}
-	
-
 }

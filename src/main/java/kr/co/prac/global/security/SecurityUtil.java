@@ -8,6 +8,7 @@ import kr.co.prac.login.exception.LoginRequiredException;
 
 public class SecurityUtil {
 	
+	private SecurityUtil() {}
 
 	 
 	 public static Long getMemberId() {

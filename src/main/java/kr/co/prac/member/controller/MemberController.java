@@ -1,11 +1,11 @@
 package kr.co.prac.member.controller;
 
 import java.util.List;
-
-
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import kr.co.prac.global.security.CustomUserDetails;
 import kr.co.prac.global.security.SecurityUtil;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import kr.co.prac.member.dto.MemberCreateRequest;
@@ -32,15 +32,13 @@ public class MemberController {
 	
 	
 	@PutMapping("/me")
-	public MemberResponse updateMe(@RequestBody MemberUpdateRequest memberUpdateRequest) {
-		Long memberId = SecurityUtil.getMemberId();
-		return memberService.update(memberId, memberUpdateRequest);
+	public MemberResponse updateMe(@RequestBody MemberUpdateRequest memberUpdateRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
+		return memberService.update(userDetails.getMemberId(), memberUpdateRequest);
 	}
 
 	@GetMapping("/me")
-	public MemberResponse me() {
-		Long memberId = SecurityUtil.getMemberId();
-		return memberService.find(memberId);
+	public MemberResponse me(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return memberService.find(userDetails.getMemberId());
 	}
 
 	@GetMapping("/me/orders")
