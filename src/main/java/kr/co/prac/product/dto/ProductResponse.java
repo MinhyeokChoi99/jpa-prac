@@ -7,13 +7,15 @@ import lombok.Getter;
 public class ProductResponse {
 	private Long number;
 	private String name;
-	private int price;
-	private int stock;
+	private Integer price;
+	private Integer stock;
+	private String description;
 	
 	public ProductResponse(Product product) {
 		this.number = product.getNumber();
 		this.name = product.getName();
 		this.price = product.getPrice();
 		this.stock = product.getStock();
+		this.description = product.getDescription();
 	}
 }

@@ -1,9 +1,6 @@
 package kr.co.prac.product.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import kr.co.prac.global.entity.BaseTimeEntity;
 import kr.co.prac.product.exception.NotEnoughStockException;
 import lombok.Getter;
@@ -21,6 +18,11 @@ public class Product extends BaseTimeEntity {
 	private int price;
 	
 	private int stock;
+
+	@Column(length = 1000) // 기본 255 이니 확장
+	private String description;
+
+
 	
 	public void addStock(int quantity) {
 		this.stock += quantity;
@@ -31,5 +33,12 @@ public class Product extends BaseTimeEntity {
 			throw new NotEnoughStockException();
 		}
 		this.stock -= quantity;
+	}
+
+	public void update(String name, int price, int stock, String description) {
+		this.name = name;
+		this.price = price;
+		this.stock = stock;
+		this.description = description;
 	}
 }
