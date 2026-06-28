@@ -9,6 +9,8 @@ import kr.co.prac.product.dto.ProductUpdateRequest;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -19,6 +21,12 @@ public class AdminProductController {
 	 */
 
 	private final AdminProductService adminProductService;
+
+
+	@GetMapping
+	public List<ProductResponse> productList() {
+		return adminProductService.productList();
+	}
 
 	@GetMapping("/{productNumber}")
 	public ProductResponse findProduct(@PathVariable Long productNumber) {

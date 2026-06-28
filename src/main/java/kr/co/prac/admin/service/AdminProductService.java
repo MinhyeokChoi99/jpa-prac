@@ -4,7 +4,11 @@ import kr.co.prac.product.dto.ProductCreateRequest;
 import kr.co.prac.product.dto.ProductResponse;
 import kr.co.prac.product.dto.ProductUpdateRequest;
 
+import java.util.List;
+
 public interface AdminProductService {
+
+    List<ProductResponse> productList();
 
     ProductResponse find(Long productNumber);
 

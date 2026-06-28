@@ -5,11 +5,14 @@ import kr.co.prac.product.dto.ProductCreateRequest;
 import kr.co.prac.product.dto.ProductResponse;
 import kr.co.prac.product.dto.ProductUpdateRequest;
 import kr.co.prac.product.entity.Product;
+import kr.co.prac.product.entity.ProductStatus;
 import kr.co.prac.product.exception.ProductNotFoundException;
 import kr.co.prac.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +21,11 @@ public class AdminProductServiceImpl implements AdminProductService{
 
     private final ProductRepository productRepository;
 
+
+    @Override
+    public List<ProductResponse> productList() {
+        return productRepository.findAll().stream().map(ProductResponse::new).toList();
+    }
 
     @Override
     @Transactional(readOnly = true)
