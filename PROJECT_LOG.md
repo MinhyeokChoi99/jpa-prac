@@ -4,7 +4,7 @@ This document tracks the current progress, decisions, completed work, blockers, 
 
 Use this file as a handoff document when continuing the project in a new chat session.
 
-_Last updated: 2026-06-26 (Asia/Seoul)_
+_Last updated: 2026-06-29 (Asia/Seoul)_
 
 ---
 
@@ -19,8 +19,10 @@ _Last updated: 2026-06-26 (Asia/Seoul)_
   - Product
   - Orders
   - OrderItem
-  - Login/session
+  - Spring Security session login
   - Admin
+  - Static frontend
+  - Planned Cart
 
 ---
 
@@ -31,14 +33,24 @@ The project should be developed step by step, with emphasis on:
 - Java/Spring learning
 - JPA relationship understanding
 - Clean layered architecture
-- API design for future frontend separation
+- API design for frontend usage
 - Production-minded refactoring
 - Portfolio-readiness
 - Incremental feature development
 - Authentication and authorization correctness
 - Session management structure
+- Test learning and test coverage
+- Backend-centered business logic
 
 The assistant role should be closer to a Spring/JPA teacher and code reviewer, not only a code generator.
+
+Important frontend/backend boundary:
+
+- The user is responsible for backend logic.
+- The assistant may help generate frontend UI.
+- Frontend code must not hide, patch, or compensate for backend defects.
+- Backend remains the source of truth for authentication, authorization, validation, stock changes, order ownership, product status transitions, and persistence.
+- Frontend role checks are display/routing only.
 
 ---
 
@@ -46,19 +58,25 @@ The assistant role should be closer to a Spring/JPA teacher and code reviewer, n
 
 Current recommended priority:
 
-1. Commit basic `SecurityConfig` and verify it does not block current APIs.
-2. Manually verify signup/login/logout with BCrypt password flow.
-3. Manually verify role-based admin authorization through `Role.ADMIN`.
-4. Manually verify owner-restricted order detail and cancel flows.
-5. Manually verify current-user deletion through `DELETE /members/me`.
-6. Manually verify admin order detail lookup through `GET /admin/orders/{orderId}`.
-7. Decide how admin role is assigned or seeded.
-8. Clean remaining plain string responses such as `"성공"`.
-9. Prepare for Spring Security session login migration.
-10. After Spring Security session login is stable, consider Redis Session.
-11. Learn tests later in one focused testing block.
-12. Compare JWT later after Spring Security/session basics are clear.
-13. Prepare APIs for future React/Vue frontend separation.
+1. Learn and add backend tests.
+   - Start with JUnit 5 and AssertJ basics.
+   - Write pure domain unit tests first.
+   - Write service unit tests with Mockito.
+   - Write repository tests with `@DataJpaTest`.
+   - Write controller/security integration tests with MockMvc.
+2. Add cart feature after initial test coverage is started.
+   - Add `Cart` and `CartItem`.
+   - Add cart item add/update/remove APIs.
+   - Add order-from-cart API.
+   - Reuse backend order validation.
+3. Add product image support starting with `imageUrl`.
+   - Add `imageUrl` to `Product`.
+   - Add `imageUrl` to product create/update request DTOs.
+   - Add `imageUrl` to product response DTO.
+   - Display product images in the static frontend.
+   - Consider file upload only later.
+4. Keep frontend as an API-calling UI only.
+5. Add README or documentation updates after the next backend phase is stable.
 
 ---
 
@@ -72,553 +90,127 @@ Current recommended priority:
 - Important decisions and progress should be recorded here to preserve continuity.
 - The assistant should explain Spring/JPA concepts in Korean with Java/Spring examples.
 - Login knowledge will be learned from the basics before choosing a final implementation style.
-- Session-based login is currently recommended before JWT.
-- React/Vue frontend separation is a future direction, but backend API design should already consider it.
+- Session-based login is recommended before JWT.
+- React/Vue frontend separation is a future direction, but backend API design should already consider frontend usage.
 
 ### 2026-06-24
 
 - Keep the roadmap as `Session first -> JWT later`.
-- Use `GET /members/me` instead of `GET /me` to match the current `/members/...` API style.
-- Do not add tests in this step; the user wants to learn tests later in one focused block.
-- Treat `/members/me` as both a session-login verification endpoint and the first real current-user API.
-- Use `SessionUtil` as the current learning-stage helper for repeated session member-id lookup.
-- Use `GET /members/me/orders` as the current-user order lookup API.
-- Use session member id for `POST /orders`; do not accept `memberId` in `OrderCreateRequest`.
-- Restrict order cancellation to the logged-in order owner.
-- Restrict order detail lookup to the logged-in order owner.
-- Store `OrderItem.unitPrice` and `OrderItem.count`, then calculate item total and order total in response DTOs.
-
-### 2026-06-25
-
-- Separate normal-user controllers and admin controllers.
-- `MemberController` should be current-user oriented.
-- `OrdersController` should be normal user order behavior only.
-- `AdminMemberController` should contain admin member management APIs.
-- `AdminOrderController` should contain admin order management APIs.
-- Wildcard imports generated by the IDE are accepted for now and should not be treated as an issue.
-- Minor whitespace-only feedback should be avoided unless it affects correctness or readability materially.
-
-### 2026-06-25 Continued
-
-- BCrypt password encoding has been introduced through Spring Security Crypto.
-- `PasswordConfig` registers `BCryptPasswordEncoder` as the `PasswordEncoder` bean.
-- Signup now stores encoded passwords through `passwordEncoder.encode(...)`.
-- Login now verifies passwords through `passwordEncoder.matches(...)`.
-- Admin authorization is no longer hardcoded as `memberId == 1L`.
-- Admin authorization now uses `AdminAuthService.requireAdmin(HttpServletRequest)`.
-- `AdminAuthService` checks the current member's role and requires `Role.ADMIN`.
-- `DELETE /members/me` has been added for current-user account deletion.
-- `GET /admin/orders/{orderId}` has been added for admin unrestricted order detail lookup.
-- `OrderService.findOneForAdmin(orderId)` has been added for admin order detail.
-- Authentication hardening roadmap: Spring Security session login first, Redis Session second, JWT later.
-- Redis should not be introduced before Spring Security unless there is a specific session-storage reason.
+- Separate normal-user APIs from admin APIs.
+- Use `/members/me` for current-user behavior.
+- Move arbitrary member lookup/deletion to admin flow.
+- Move all-order lookup to admin flow.
+- Treat order cancellation as a domain command, not simple deletion.
 
 ### 2026-06-26
 
-- Added a basic `SecurityConfig` under `kr.co.prac.global.security`.
-- Registered a `SecurityFilterChain` bean.
-- Disabled Spring Security default `csrf`, `formLogin`, `httpBasic`, and `logout` behavior for the current learning-stage REST API.
-- Kept the existing custom `HttpSession` login flow.
-- Chose not to enable `.authenticated()` or `.hasRole("ADMIN")` yet.
-- Reason: the project currently stores login state through `SessionConst.LOGIN_MEMBER_ID`, not through Spring Security `SecurityContextHolder`.
-- Current authorization remains manual:
-  - Login-required APIs use `SessionUtil.getLoginMemberId(...)`.
-  - Admin APIs use `AdminAuthService.requireAdmin(...)`.
-- `SecurityConfig` currently uses `.anyRequest().permitAll()` intentionally so Spring Security does not block the custom session-login flow.
-- Full Spring Security session login remains the next security migration step.
-
----
-
-## 5. Completed Work
-
-### Base project/domain work
-
-- Member domain implemented.
-- Product domain implemented.
-- Orders and OrderItem domains implemented.
-- DTOs introduced for request/response separation.
-- Global exception model introduced with `BusinessException`, `ErrorCode`, `ErrorResponse`, and global handler.
-- JPA auditing/base time entity introduced.
-- `global.config` package introduced.
-- `global.security` package introduced.
-- QueryDSL dependencies are present, although custom QueryDSL repository/query usage has not been confirmed yet.
-
-### Password/security crypto work
-
-- `spring-security-crypto` dependency added.
-- `PasswordConfig` added.
-- `BCryptPasswordEncoder` configured as a `PasswordEncoder` bean.
-- Signup encodes raw password before saving member.
-- Login compares raw request password with stored encoded password through `PasswordEncoder.matches(...)`.
-
-### Basic Spring Security filter configuration work
-
-Completed changes:
-
-- `SecurityConfig` created under `kr.co.prac.global.security`.
-- `SecurityFilterChain` bean registered.
-- CSRF disabled for the current REST API learning/testing stage.
-- Default Spring Security form login disabled.
-- HTTP Basic authentication disabled.
-- Default Spring Security logout disabled.
-- Static resources and Swagger paths explicitly permitted.
-- `POST /members` and `POST /members/login` explicitly permitted.
-- `GET /products` explicitly permitted.
-- Remaining requests are currently permitted at the Spring Security filter level.
-- Existing manual session and authorization checks remain responsible for protecting user/admin APIs.
-
-Important decision:
-
-- Do not enable `.authenticated()` or `.hasRole("ADMIN")` yet.
-- These should be enabled only after Spring Security authentication is connected through `SecurityContextHolder`, `Authentication`, `UserDetailsService`, and authorities.
-
-### Login/session work
-
-- `POST /members/login` implemented.
-- `POST /members/logout` implemented.
-- Login request validation added.
-- `SessionConst.LOGIN_MEMBER_ID` used as the session attribute key.
-- `SessionUtil.getLoginMemberId(HttpServletRequest)` introduced.
-- Protected APIs now reuse `SessionUtil` instead of duplicating session lookup code.
-- Current login is still custom `HttpSession` login, not Spring Security login.
-
-### Current-user member APIs
-
-Current normal member API surface:
-
-```text
-POST   /members
-PUT    /members/me
-GET    /members/me
-GET    /members/me/orders
-DELETE /members/me
-```
-
-Completed changes:
-
-- `POST /members` used for signup.
-- `GET /members/me` added for logged-in member lookup.
-- `GET /members/me/orders` added for logged-in member's order list.
-- `PUT /members/{number}` replaced by `PUT /members/me`.
-- `DELETE /members/me` added for current-user deletion.
-- Public `GET /members/{number}` removed from normal `MemberController`.
-- Public `DELETE /members/{number}` removed from normal `MemberController`.
-
-### User order APIs
-
-Current normal order API surface:
-
-```text
-GET  /orders/{orderId}
-POST /orders
-POST /orders/{orderId}/cancel
-```
-
-Completed changes:
-
-- `POST /orders` now requires login.
-- `OrderCreateRequest` no longer carries `memberId`.
-- Order creation uses the logged-in session member id.
-- `GET /orders/{orderId}` requires login and owner check.
-- `POST /orders/{orderId}/cancel` requires login and owner check.
-- Public `GET /orders` removed from normal `OrdersController`.
-
-### Order detail and price response work
-
-Completed changes:
-
-- `OrderResponse` used for order summaries.
-- `OrderDetailResponse` used for order detail.
-- `OrderItemResponse` used for order-item response.
-- `OrderItem.unitPrice` stores ordered unit price.
-- `OrderItem.count` stores quantity.
-- Item total is calculated as `unitPrice * count`.
-- Order total is calculated as sum of item totals.
-
-### Admin controller separation
-
-Current admin member API surface:
-
-```text
-GET    /admin/members
-GET    /admin/members/{number}
-DELETE /admin/members/{number}
-```
-
-Current admin order API surface:
-
-```text
-GET /admin/orders
-GET /admin/orders/{orderId}
-```
-
-Completed changes:
-
-- `AdminMemberController` created under `kr.co.prac.admin.controller`.
-- `AdminOrderController` created under `kr.co.prac.admin.controller`.
-- Admin member APIs use `@RequestMapping("/admin/members")`.
-- Admin order APIs use `@RequestMapping("/admin/orders")`.
-- Admin APIs call `AdminAuthService.requireAdmin(httpServletRequest)`.
-- `NotAuthorizedAdminException` created under `kr.co.prac.admin.exception`.
-- `ErrorCode.NOT_AUTHORIZED_ADMIN` added.
-- Admin order detail endpoint added: `GET /admin/orders/{orderId}`.
-- Admin order detail service method added: `findOneForAdmin(orderId)`.
-
-### Admin authorization work
-
-Completed changes:
-
-- Hardcoded admin check based on `memberId == 1L` is no longer the current design.
-- `Role.ADMIN` and `Role.USER` exist.
-- `MemberResponse` exposes `role`.
-- `AdminAuthService` checks whether the current member has `Role.ADMIN`.
-- Admin authorization is role-based at the helper-service level.
-
-Still not completed:
-
-- Spring Security request-level authorization such as `hasRole("ADMIN")`.
-- Dedicated admin role assignment/seed flow.
-
----
-
-## 6. Current Confirmed API Surface
-
-### Normal member APIs
-
-```text
-POST   /members
-PUT    /members/me
-GET    /members/me
-GET    /members/me/orders
-DELETE /members/me
-```
-
-### Login APIs
-
-```text
-POST /members/login
-POST /members/logout
-```
-
-### Normal order APIs
-
-```text
-GET  /orders/{orderId}
-POST /orders
-POST /orders/{orderId}/cancel
-```
-
-### Admin member APIs
-
-```text
-GET    /admin/members
-GET    /admin/members/{number}
-DELETE /admin/members/{number}
-```
-
-### Admin order APIs
-
-```text
-GET /admin/orders
-GET /admin/orders/{orderId}
-```
-
-### Product APIs
-
-```text
-GET /products
-```
-
----
-
-## 7. Current Authorization Rules
-
-### Public APIs at application/business level
-
-```text
-POST /members
-POST /members/login
-GET  /products
-```
-
-### Login-required APIs
-
-The following require login through `SessionUtil.getLoginMemberId(...)`:
-
-```text
-PUT    /members/me
-GET    /members/me
-GET    /members/me/orders
-DELETE /members/me
-GET    /orders/{orderId}
-POST   /orders
-POST   /orders/{orderId}/cancel
-```
-
-### Owner-only APIs
-
-The following require the order/member to belong to the logged-in user:
-
-```text
-GET  /orders/{orderId}
-POST /orders/{orderId}/cancel
-```
-
-### Admin-only APIs
-
-The following require `AdminAuthService.requireAdmin(...)`:
-
-```text
-GET    /admin/members
-GET    /admin/members/{number}
-DELETE /admin/members/{number}
-GET    /admin/orders
-GET    /admin/orders/{orderId}
-```
-
-Current admin rule:
-
-```text
-current member role == Role.ADMIN
-```
-
-### Spring Security filter-level rule
-
-Current `SecurityConfig` intentionally permits remaining requests at the filter level:
-
-```java
-.anyRequest().permitAll()
-```
-
-Reason:
-
-- The project is not yet using Spring Security `Authentication`.
-- The current login state is stored as `SessionConst.LOGIN_MEMBER_ID`.
-- Business-level login/admin checks are still performed manually through `SessionUtil` and `AdminAuthService`.
-
----
-
-## 8. Current Risks / Known Limitations
-
-- Custom `HttpSession` login is still used instead of Spring Security login.
-- Basic Spring Security filter configuration now exists.
-- Spring Security Crypto is used, but full Spring Security authentication/authorization is not yet introduced.
-- `SecurityConfig` currently permits all remaining requests intentionally.
-- Login-required APIs still depend on `SessionUtil.getLoginMemberId(...)`.
-- Admin-only APIs still depend on `AdminAuthService.requireAdmin(...)`.
-- Spring Security request-level authorization such as `.authenticated()` and `.hasRole("ADMIN")` is not yet enabled.
-- Admin role assignment/seed flow is not clearly defined yet.
-- Redis Session is not yet introduced.
-- JWT is not yet introduced.
-- No production CSRF strategy yet.
-- No production cookie/session hardening yet.
-- Some API responses still return plain strings such as `"성공"`.
-- Tests are intentionally postponed.
-- Wildcard imports may remain due to IDE behavior and are accepted for now.
-- `AdminAuthService` currently depends on member repository/domain lookup. This is acceptable for now but may be refactored later into Spring Security authorities.
-
----
-
-## 9. Recommended Next Steps
-
-### Immediate manual verification
-
-1. Confirm the server starts successfully with `SecurityConfig`.
-2. Confirm Swagger UI loads.
-3. Confirm `GET /products` works without login.
-4. Confirm `POST /members` works without login.
-5. Confirm `POST /members/login` works without login.
-6. Signup a new user.
-7. Confirm the stored password is encoded, not plain text.
-8. Login with the correct password; expect success.
-9. Login with the wrong password; expect `401 Unauthorized`.
-10. Call `GET /members/me`; expect current logged-in member.
-11. Logout.
-12. Call `GET /members/me` again; expect `401 Unauthorized`.
-13. Login as a `Role.ADMIN` member.
-14. Call `GET /admin/members`; expect success.
-15. Call `GET /admin/members/{number}`; expect success.
-16. Call `GET /admin/orders`; expect success.
-17. Call `GET /admin/orders/{orderId}`; expect success.
-18. Login as a `Role.USER` member.
-19. Call admin APIs; expect `403 Forbidden`.
-20. Call `GET /orders/{orderId}` for own order; expect success.
-21. Call `GET /orders/{orderId}` for another member's order; expect `403 Forbidden`.
-22. Call `POST /orders/{orderId}/cancel` for own order; expect success.
-23. Call `POST /orders/{orderId}/cancel` for another member's order; expect `403 Forbidden`.
-24. Call `DELETE /members/me`; verify current member deletion behavior.
-
-### Recommended next code step
-
-Option A: Define admin role assignment/seed strategy.
-
-Reason:
-
-- New members currently default to `Role.USER`.
-- Role-based admin authorization now exists.
-- There needs to be a clear way to create or mark an admin member for testing and development.
-
-Option B: Standardize success responses.
-
-Reason:
-
-- Some endpoints still return plain strings such as `"성공"`.
-- API response consistency becomes more important before frontend separation.
-
-Option C: Start Spring Security session login migration.
-
-Reason:
-
-- BCrypt is already implemented.
-- Role-based admin logic is already conceptually prepared.
-- Current manual `SessionUtil` and `AdminAuthService` can gradually move toward Spring Security authentication and authorization.
-
-Option D: Redis Session after Spring Security.
-
-Reason:
-
-- Redis is valuable as an external session store.
-- Redis should come after Spring Security session login, not before, unless there is a specific infrastructure/session-storage need.
-
----
-
-## 10. Authentication Roadmap Decision
-
-Recommended order:
-
-```text
-1. Current custom HttpSession login verification
-2. Basic SecurityFilterChain configuration
-3. Spring Security session login
-4. Spring Security role-based authorization
-5. Spring Session + Redis
-6. JWT comparison later
-```
-
-Current status:
-
-```text
-Step 1: mostly implemented
-Step 2: being added in the current commit
-Step 3: not started
-Step 4: not started
-Step 5: not started
-Step 6: later
-```
-
-Rationale:
-
-- The basic `SecurityFilterChain` step prevents Spring Security defaults from interfering with the current custom session login.
-- Spring Security strengthens the core authentication/authorization structure.
-- Spring Security session login should come before Redis Session.
-- Redis mainly changes where session data is stored.
-- Redis does not replace login, password verification, authorization, CSRF handling, or authentication failure handling.
-- JWT should be compared later after Spring Security/session basics are clear.
-
-Target Spring Security direction:
-
-```text
-Member
-- id
-- email
-- password
-- role
-
-CustomUserDetails
-CustomUserDetailsService
-SecurityConfig
-AuthenticationEntryPoint
-AccessDeniedHandler
-```
-
-Target controller direction:
-
-```java
-@GetMapping("/members/me")
-public MemberResponse me(@AuthenticationPrincipal CustomUserDetails userDetails) {
-    return memberService.find(userDetails.getMemberId());
-}
-```
-
-Target authorization direction after Spring Security authentication is connected:
-
-```java
-.requestMatchers("/admin/**").hasRole("ADMIN")
-.requestMatchers("/members/me", "/members/me/**").authenticated()
-.requestMatchers("/orders", "/orders/**").authenticated()
-.anyRequest().permitAll()
-```
-
-Target Redis direction after Spring Security:
-
-```text
-Browser
--> JSESSIONID cookie
--> Spring Security
--> Spring Session
--> Redis session store
-```
-
----
-
-## 11. Suggested Next Commit Messages
-
-Basic SecurityConfig:
-
-```bash
-git commit -m "feat: add basic security filter configuration"
-```
-
-Documentation update:
-
-```bash
-git commit -m "docs: update project context and log"
-```
-
-Admin role setup:
-
-```bash
-git commit -m "feat: add admin role setup flow"
-```
-
-Success response cleanup:
-
-```bash
-git commit -m "refactor: standardize success responses"
-```
-
-Spring Security session login:
-
-```bash
-git commit -m "feat: add spring security session login"
-```
-
-Redis Session:
-
-```bash
-git commit -m "feat: add redis backed session management"
-```
-
-Testing block:
-
-```bash
-git commit -m "test: add authentication and order authorization tests"
-```
-
----
-
-## 12. Assistant Notes for Future Sessions
-
-- The user wants direct Korean code review.
-- The user often provides diffs and asks if they are correct.
-- Say clearly whether the diff is commit-ready.
-- Do not focus on whitespace-only issues anymore unless requested.
-- Do not flag wildcard imports as an issue unless they cause problems.
-- Prioritize authorization boundaries, API responsibility, compile safety, and domain correctness.
-- Do not recommend JWT as the next immediate step.
-- Recommended login hardening order is custom session verification, basic `SecurityFilterChain`, Spring Security session login, Redis Session, JWT later.
-- Do not push tests until the user starts the testing-learning phase.
-- When creating updated project docs, use exact filenames:
+- `PROJECT_CONTEXT.md` and `PROJECT_LOG.md` should be kept as stable handoff documents.
+- Exact filenames must be preserved:
   - `PROJECT_CONTEXT.md`
   - `PROJECT_LOG.md`
-- Do not add `_updated` to generated file names.
+- Do not generate files with suffixes like `_updated`.
+- Documentation format should remain consistent with the existing numbered section structure.
+
+### 2026-06-29
+
+- Spring Security session login is now treated as the current authentication direction.
+- Admin APIs are protected as admin-only backend APIs.
+- Admin product CRUD has been added.
+- Product status management has been added:
+  - `ACTIVE`
+  - `HIDDEN`
+  - `DELETED`
+- Product delete means soft delete through `ProductStatus.DELETED`.
+- Public product list should expose only `ACTIVE` products.
+- Admin product list should expose all product statuses.
+- Static frontend files were created under:
+  - `src/main/resources/static/index.html`
+  - `src/main/resources/static/js/app.js`
+  - `src/main/resources/static/css/style.css`
+- Login page originally included an intro/hero section.
+- The login intro/hero section was removed from the code, not merely hidden by CSS.
+- Current login page should show only:
+  - login form
+  - signup form
+- Browser flow was mostly verified by the user.
+- The next backend phase should focus on tests, not more frontend patching.
+
+### 2026-06-29 Testing Decision
+
+Testing is now the selected next learning and implementation phase.
+
+Testing should include:
+
+- domain unit tests
+- service unit tests with Mockito
+- repository tests with `@DataJpaTest`
+- controller/security integration tests with MockMvc
+- broader integration tests later if needed
+
+The user has limited prior experience writing tests, so test work must include explanation of:
+
+- what behavior is being tested
+- what data is prepared
+- what action is executed
+- what result is asserted
+- what type of test is being written
+
+Recommended test implementation order:
+
+1. Learn JUnit 5 and AssertJ syntax.
+2. Write pure domain unit tests for `Product`.
+3. Write order stock/cancel-related domain tests.
+4. Write service unit tests with Mockito.
+5. Write repository tests with `@DataJpaTest`.
+6. Write controller/security integration tests with MockMvc.
+7. Add broader API flow integration tests if needed.
+
+Important testing distinction:
+
+- Domain unit tests usually do not require Mockito.
+- Service unit tests often use Mockito to mock repositories, encoders, and other dependencies.
+- Repository tests should not mock repositories; use `@DataJpaTest`.
+- Controller/security integration tests should verify real API/security behavior with MockMvc.
+
+### 2026-06-29 Cart Decision
+
+Cart is selected as the next commerce feature after the testing phase starts.
+
+Expected future domain:
+
+- `Cart`
+- `CartItem`
+
+Expected future APIs:
+
+```text
+GET    /cart
+POST   /cart/items
+PUT    /cart/items/{cartItemId}
+DELETE /cart/items/{cartItemId}
+POST   /cart/order
+```
+
+Important rule:
+
+- Cart must not replace backend order validation.
+- Product status and stock must be checked again when creating an order from cart.
+- The authenticated user must own the cart.
+
+### 2026-06-29 Product Image Decision
+
+Product image support should start with a simple `imageUrl` field.
+
+Stage 1:
+
+- Add `imageUrl` to `Product`.
+- Add `imageUrl` to product create/update request DTOs.
+- Add `imageUrl` to product response DTO.
+- Display product images in the static frontend.
+- Use a default placeholder image when `imageUrl` is empty.
+
+Decision:
+
+- Do not start with file upload.
+- Consider `MultipartFile`, local storage, or object storage only later.
+

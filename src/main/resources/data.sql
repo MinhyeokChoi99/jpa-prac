@@ -1,8 +1,8 @@
-INSERT INTO product (name, price, stock, created_at, updated_at)
+INSERT INTO product (name, price, stock, created_at, updated_at, product_status)
 VALUES
-('JPA Programming Book', 35000, 98, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('Spring Boot Book', 42000, 79, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('QueryDSL Book', 38000, 47, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+('JPA Programming Book', 35000, 98, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,"ACTIVE"),
+('Spring Boot Book', 42000, 79, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,"ACTIVE"),
+('QueryDSL Book', 38000, 47, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,"ACTIVE");
 
 INSERT INTO member (email, name, password, role, created_at, updated_at)
 VALUES
