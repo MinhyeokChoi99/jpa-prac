@@ -4,11 +4,12 @@ import jakarta.persistence.*;
 import kr.co.prac.global.entity.BaseTimeEntity;
 import kr.co.prac.product.exception.NotEnoughStockException;
 import lombok.Getter;
-import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
 public class Product extends BaseTimeEntity {
+
+	protected Product() {}
 
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long number;
@@ -18,6 +19,9 @@ public class Product extends BaseTimeEntity {
 	private int price;
 	
 	private int stock;
+
+	@Enumerated(EnumType.STRING)
+	private ProductStatus productStatus;
 
 	@Column(length = 1000) // 기본 255 이니 확장
 	private String description;
@@ -40,5 +44,27 @@ public class Product extends BaseTimeEntity {
 		this.price = price;
 		this.stock = stock;
 		this.description = description;
+	}
+
+	public static Product create(String name, int price, int stock, String description) {
+		Product product = new Product();
+		product.name = name;
+		product.price = price;
+		product.stock = stock;
+		product.description = description;
+		product.productStatus = ProductStatus.ACTIVE;
+		return product;
+	}
+
+	public void hide() {
+		this.productStatus = ProductStatus.HIDDEN;
+	}
+
+	public void show() {
+		this.productStatus = ProductStatus.ACTIVE;
+	}
+
+	public void delete() {
+		this.productStatus = ProductStatus.DELETED;
 	}
 }

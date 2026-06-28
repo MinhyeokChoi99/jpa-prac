@@ -40,4 +40,14 @@ public class AdminProductController {
 		adminProductService.delete(productNumber);
 	}
 
+	@PatchMapping("/{productNumber}/hide")
+	public ProductResponse hideProduct(@PathVariable Long productNumber) {
+		return adminProductService.hide(productNumber);
+	}
+
+	@PatchMapping("/{productNumber}/show")
+	public ProductResponse showProduct(@PathVariable Long productNumber) {
+		return adminProductService.show(productNumber);
+	}
+
 }

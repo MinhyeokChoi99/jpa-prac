@@ -2,9 +2,9 @@ package kr.co.prac.product.service;
 
 import java.util.List;
 
+import kr.co.prac.product.entity.ProductStatus;
 import org.springframework.stereotype.Service;
 
-import com.querydsl.jpa.impl.JPAQuery;
 
 import kr.co.prac.product.dto.ProductResponse;
 import kr.co.prac.product.repository.ProductRepository;
@@ -18,7 +18,7 @@ public class ProductServiceImpl implements ProductService {
 	
 	@Override
 	public List<ProductResponse> productList() {
-		return productRepository.findAll().stream().map(ProductResponse::new).toList();
+		return productRepository.findAllByProductStatus(ProductStatus.ACTIVE).stream().map(ProductResponse::new).toList();
 	}
 
 	

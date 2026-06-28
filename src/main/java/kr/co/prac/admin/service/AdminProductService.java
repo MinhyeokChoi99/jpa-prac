@@ -13,4 +13,8 @@ public interface AdminProductService {
     ProductResponse update(Long productNumber, ProductUpdateRequest productUpdateRequest);
 
     void delete(Long productNumber);
+
+    ProductResponse hide(Long productNumber);
+
+    ProductResponse show(Long productNumber);
 }

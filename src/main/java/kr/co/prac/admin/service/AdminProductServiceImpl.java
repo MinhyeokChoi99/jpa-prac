@@ -28,11 +28,13 @@ public class AdminProductServiceImpl implements AdminProductService{
 
     @Override
     public ProductResponse create(ProductCreateRequest productCreateRequest) {
-        Product product = new Product();
-        product.setName(productCreateRequest.getName());
-        product.setPrice(productCreateRequest.getPrice());
-        product.setStock(productCreateRequest.getStock());
-        product.setDescription(productCreateRequest.getDescription());
+        Product product = Product.create(
+                productCreateRequest.getName(),
+                productCreateRequest.getPrice(),
+                productCreateRequest.getStock(),
+                productCreateRequest.getDescription()
+                );
+
         productRepository.save(product);
         return new ProductResponse(product);
 
@@ -55,6 +57,29 @@ public class AdminProductServiceImpl implements AdminProductService{
     @Override
     public void delete(Long productNumber) {
         Product product = productRepository.findById(productNumber).orElseThrow(ProductNotFoundException::new);
-        productRepository.delete(product);
+        product.delete();
     }
+
+    @Override
+    @Transactional
+    public ProductResponse hide(Long productNumber) {
+        Product product = productRepository.findById(productNumber)
+                .orElseThrow(ProductNotFoundException::new);
+
+        product.hide();
+
+        return new ProductResponse(product);
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse show(Long productNumber) {
+        Product product = productRepository.findById(productNumber)
+                .orElseThrow(ProductNotFoundException::new);
+
+        product.show();
+
+        return new ProductResponse(product);
+    }
+
 }
