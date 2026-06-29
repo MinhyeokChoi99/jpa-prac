@@ -13,4 +13,6 @@ public class OrderCreateRequest {
 	@NotNull(message = "수량필수")
 	@Positive(message = "1건이상")
 	private Integer count;
+
+
 }

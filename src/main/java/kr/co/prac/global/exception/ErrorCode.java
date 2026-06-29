@@ -22,6 +22,8 @@ public enum ErrorCode {
 	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다"),
 	//존재하지 않는 상품을 주문하려고 할때
 	CARTITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니에 존재하지 않는 상품입니다"),
+	//장바구니가 비었는데 주문하려고 할 때
+	EMPTY_CART_ITEM(HttpStatus.BAD_REQUEST, "장바구니가 비어있습니다"),
 	// INPUT을 잘못주었을때
 	INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다"),
 	// 비밀번호를 잘못주었을때

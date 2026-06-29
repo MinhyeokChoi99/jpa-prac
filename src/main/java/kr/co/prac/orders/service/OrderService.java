@@ -9,6 +9,8 @@ import kr.co.prac.orders.dto.OrderResponse;
 public interface OrderService {
 	
 	OrderDetailResponse createOrder(Long memberId, List<OrderCreateRequest> orderCreateRequests);
+
+	OrderDetailResponse orderFromCart(Long memberId);
 	
 	OrderDetailResponse findOne(Long orderId,Long loginMemberId);
 	

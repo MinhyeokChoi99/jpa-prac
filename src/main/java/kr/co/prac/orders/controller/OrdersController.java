@@ -33,6 +33,14 @@ public class OrdersController {
 	public OrderDetailResponse createOrder(@RequestBody List<@Valid OrderCreateRequest> orderCreateRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		return orderService.createOrder( userDetails.getMemberId(), orderCreateRequest);
 	}
+
+	// 장바구니 상품 주문
+	@PostMapping("/orders/from-cart")
+	public OrderDetailResponse orderFromCart(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+		Long memberId = customUserDetails.getMemberId();
+		return orderService.orderFromCart(memberId);
+
+	}
 	// 주문 취소
 	@PostMapping("/orders/{orderId}/cancel")
 	public void cancelOrder(@PathVariable Long orderId, @AuthenticationPrincipal CustomUserDetails userDetails) {
