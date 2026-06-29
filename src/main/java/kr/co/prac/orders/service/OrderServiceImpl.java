@@ -59,13 +59,10 @@ public class OrderServiceImpl implements OrderService{
 		List<OrderItemResponse> list = new ArrayList<>();
 
 		for(OrderCreateRequest orderCreateRequest : orderCreateRequests) {
-			Product product = productRepository.findById(orderCreateRequest.getProductNumber()).orElseThrow(ProductNotFoundException::new);
 
-			if (product.getProductStatus() != ProductStatus.ACTIVE) {
-				throw new ProductNotFoundException();
-			}
-			
-			product.removeStock(orderCreateRequest.getCount());
+			Long productNumber = orderCreateRequest.getProductNumber();
+
+			Product product = prepareProductForOrder(productNumber, orderCreateRequest.getCount());
 
 			OrderItem orderItem = OrderItem.create(savedOrder, product, orderCreateRequest.getCount());
 			orderItemRepository.save(orderItem);
@@ -74,6 +71,7 @@ public class OrderServiceImpl implements OrderService{
 
 		return new OrderDetailResponse(savedOrder,list);
 	}
+
 
 	@Override // 장바구니 아이템 주문
 	public OrderDetailResponse orderFromCart(Long memberId) {
@@ -92,11 +90,9 @@ public class OrderServiceImpl implements OrderService{
 		for (CartItem cartItem : cartItemByMemberId) {
 			int count = cartItem.getCount();
 
-			Product product = productRepository.findById(cartItem.getProduct().getNumber()).orElseThrow(ProductNotFoundException::new);
-			if(product.getProductStatus() != ProductStatus.ACTIVE) {
-				throw new ProductNotFoundException();
-			}
-			product.removeStock(count);
+			Long productNumber = cartItem.getProduct().getNumber();
+
+			Product product = prepareProductForOrder(productNumber, count);
 
 			OrderItem orderItem = OrderItem.create(savedOrder, product, count);
 			orderItemRepository.save(orderItem);
@@ -117,15 +113,15 @@ public class OrderServiceImpl implements OrderService{
 		if(!order.getMember().getNumber().equals(loginMemberId)) {
 			throw new NotAuthorizedMemberException();
 		}
-		
+
 		List<OrderItemResponse> orderItems = orderItemRepository.
 				findByOrdersNumber(orderId)
 				.stream()
 				.map(OrderItemResponse::new)
 				.toList();
-		
+
 		return new OrderDetailResponse(order, orderItems);
-		
+
 	}
 
 
@@ -146,13 +142,13 @@ public class OrderServiceImpl implements OrderService{
 		if(orders.getStatus() == OrderStatus.CANCEL) {
 			throw new AlreadyCancelledOrderException();
 		}
-		
+
 		if(!orders.getMember().getNumber().equals(loginMemberId)) {
 			throw new NotAuthorizedCancelException();
 		}
-		
+
 		List<OrderItem> orderItems = orderItemRepository.findByOrdersNumber(ordersId);
-		for(OrderItem orderItem : orderItems) {		
+		for(OrderItem orderItem : orderItems) {
 			Product product = orderItem.getProduct();
 			product.addStock(orderItem.getCount());
 		}
@@ -160,6 +156,7 @@ public class OrderServiceImpl implements OrderService{
 	}
 
 	//memberId로 order 조회
+
 	@Override
 	@Transactional(readOnly = true)
 	public List<OrderResponse> memberIdFound(Long memberId) {
@@ -167,8 +164,8 @@ public class OrderServiceImpl implements OrderService{
 		List<OrderResponse> list = memberOrders.stream().map(OrderResponse::new).toList();
 		return list;
 	}
-
 	// 관리자 전용 단건 조회
+
 	@Override
 	@Transactional(readOnly = true)
 	public OrderDetailResponse findOneForAdmin(Long orderId) {
@@ -182,5 +179,16 @@ public class OrderServiceImpl implements OrderService{
 
 		return new OrderDetailResponse(order, orderItems);
 
+	}
+
+	private Product prepareProductForOrder(Long productNumber, int count) {
+		Product product = productRepository.findById(productNumber).orElseThrow(ProductNotFoundException::new);
+
+		if (product.getProductStatus() != ProductStatus.ACTIVE) {
+			throw new ProductNotFoundException();
+		}
+		product.removeStock(count);
+
+		return product;
 	}
 }
