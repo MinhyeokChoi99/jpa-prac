@@ -55,8 +55,8 @@ public class CartItemServiceImpl implements CartItemService{
 
 	@Override
 	public CartItemResponse addCount(Long memberId, Long cartItemId) {
-		findMember(memberId);
-		CartItem cartItem = cartItemRepository.findByMemberNumberAndCartItemNumber(memberId, cartItemId).orElseThrow(CartItemNotFoundException::new);
+
+		CartItem cartItem = findCartItem(cartItemId, memberId);
 		cartItem.addCount();
 		return new CartItemResponse(cartItem);
 		
@@ -65,26 +65,29 @@ public class CartItemServiceImpl implements CartItemService{
 
 	@Override
 	public void subCount(Long memberId, Long cartItemId) {
-		findMember(memberId);
-		
-		CartItem cartItem = cartItemRepository.findByMemberNumberAndCartItemNumber(memberId, cartItemId).orElseThrow(CartItemNotFoundException::new);
+
+		CartItem cartItem = findCartItem(cartItemId, memberId);
 		if(cartItem.getCount() == 1) {
 			cartItemRepository.delete(cartItem);
+			return;
 		}
 		cartItem.subCount();
 	}
 
 	@Override
 	public void deleteItem(Long memberId, Long cartItemId) {
-		findMember(memberId);
-		CartItem cartItem = cartItemRepository.findByMemberNumberAndCartItemNumber(memberId, cartItemId).orElseThrow(CartItemNotFoundException::new);
-		
+		CartItem cartItem = findCartItem(cartItemId, memberId);
+
 		cartItemRepository.delete(cartItem);
-		
+
 	}
-	
+
 	private Member findMember(Long memberId) {
 		return memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
+	}
+
+	private CartItem findCartItem(Long cartItemId, Long memberId) {
+		return cartItemRepository.findByNumberAndMemberNumber(cartItemId, memberId).orElseThrow(CartItemNotFoundException::new);
 	}
 
 }

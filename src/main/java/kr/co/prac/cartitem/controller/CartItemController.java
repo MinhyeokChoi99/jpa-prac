@@ -2,14 +2,11 @@ package kr.co.prac.cartitem.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+import kr.co.prac.cartitem.dto.CartItemRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import kr.co.prac.cartitem.dto.CartItemResponse;
 import kr.co.prac.cartitem.service.CartItemService;
@@ -30,6 +27,11 @@ public class CartItemController {
 	}
 	
 	// 장바구니 등록
+
+	@PostMapping
+	public CartItemResponse addCartItem(@RequestBody @Valid CartItemRequest cartItemRequest, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+		return cartItemService.addItem(customUserDetails.getMemberId(), cartItemRequest);
+	}
 	
 	
 	// 증가, 감소
