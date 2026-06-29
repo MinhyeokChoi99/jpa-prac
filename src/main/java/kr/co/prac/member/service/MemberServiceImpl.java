@@ -29,12 +29,8 @@ public class MemberServiceImpl implements MemberService{
 		if(memberRepository.existsByEmail(memberCreateRequest.getEmail()) ) {
 			throw new AlreadyExistMemberException();
 		}
-		Member member = new Member();
-		member.setName(memberCreateRequest.getName());
-		member.setEmail(memberCreateRequest.getEmail());
 		String encodedPassword = passwordEncoder.encode(memberCreateRequest.getPassword());
-		member.setPassword(encodedPassword);
-		member.setRole(Role.USER);
+		Member member = Member.create(memberCreateRequest.getName(), memberCreateRequest.getEmail(), encodedPassword);
 		Member savedMember = memberRepository.save(member);
 		return new MemberResponse(savedMember);
 	}
@@ -63,14 +59,8 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	public MemberResponse update(Long id, MemberUpdateRequest memberUpdateRequest) {
 		Member member = memberRepository.findById(id).orElseThrow(MemberNotFoundException::new);
-		if(memberUpdateRequest.getName() != null && !memberUpdateRequest.getName().equals("")) {
-			member.setName(memberUpdateRequest.getName());			
-		}
-		if(memberUpdateRequest.getEmail() != null && !memberUpdateRequest.getEmail().equals("")) {
-			member.setEmail(memberUpdateRequest.getEmail());			
-		}	
-		
-		
+	
+		member.update(memberUpdateRequest.getName(), memberUpdateRequest.getEmail());
 		return new MemberResponse(member);
 	}
 	

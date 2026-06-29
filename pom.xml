@@ -127,6 +127,11 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+        	<groupId>kr.co.ureca</groupId>
+        	<artifactId>d260526_mybatis_thymeleaf1</artifactId>
+        	<version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

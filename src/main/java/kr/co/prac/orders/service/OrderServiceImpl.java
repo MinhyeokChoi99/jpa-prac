@@ -1,10 +1,11 @@
 package kr.co.prac.orders.service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import kr.co.prac.member.entity.Member;
 import kr.co.prac.member.exception.MemberNotFoundException;
 import kr.co.prac.member.repository.MemberRepository;
 import kr.co.prac.orders.dto.OrderCreateRequest;
@@ -44,10 +45,9 @@ public class OrderServiceImpl implements OrderService{
 		if(orderCreateRequests == null || orderCreateRequests.isEmpty()) {
 			throw new EmptyItemOrderException();
 		}
-		Orders order = new Orders();
-		order.setMember(memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new));
-		order.setOrderDate(LocalDateTime.now());
-		order.setStatus(OrderStatus.READY);
+		
+		Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
+		Orders order = Orders.create(member);
 		Orders savedOrder = ordersRepository.save(order);
 		
 		List<OrderItemResponse> list = new ArrayList<>();
@@ -56,11 +56,7 @@ public class OrderServiceImpl implements OrderService{
 			Product product = productRepository.findById(orderCreateRequest.getProductNumber()).orElseThrow(ProductNotFoundException::new);
 			product.removeStock(orderCreateRequest.getCount());
 			
-			OrderItem orderItem = new OrderItem();
-			orderItem.setCount(orderCreateRequest.getCount());
-			orderItem.setOrders(savedOrder);
-			orderItem.setProduct(product);
-			orderItem.setUnitPrice(product.getPrice());
+			OrderItem orderItem = OrderItem.create(savedOrder, product, orderCreateRequest.getCount());
 			orderItemRepository.save(orderItem);
 			list.add(new OrderItemResponse(orderItem));
 		}
@@ -115,7 +111,7 @@ public class OrderServiceImpl implements OrderService{
 			Product product = orderItem.getProduct();
 			product.addStock(orderItem.getCount());
 		}
-		orders.setStatus(OrderStatus.CANCEL);
+		orders.cancel();
 	}
 
 	//memberId로 order 조회

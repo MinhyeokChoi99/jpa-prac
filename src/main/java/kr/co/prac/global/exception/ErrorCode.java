@@ -20,6 +20,8 @@ public enum ErrorCode {
 	NOT_ENOUGH_STOCK(HttpStatus.BAD_REQUEST,"재고가 부족합니다"),
 	//존재하지 않는 상품을 주문하려고 할때
 	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다"),
+	//존재하지 않는 상품을 주문하려고 할때
+	CARTITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니에 존재하지 않는 상품입니다"),
 	// INPUT을 잘못주었을때
 	INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다"),
 	// 비밀번호를 잘못주었을때
