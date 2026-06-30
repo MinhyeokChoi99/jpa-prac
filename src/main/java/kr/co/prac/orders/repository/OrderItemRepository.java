@@ -17,13 +17,13 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
             p.name,
             oi.unitPrice,
             oi.count,
-            pi.thumbnailUrl
+            pi.imageUrl
         )
         from OrderItem oi
         join oi.product p
         left join ProductImage pi
             on pi.product = p
-           and pi.thumbnail = true
+           and pi.imageUrl = true
         where oi.orders.number = :orderId
         """)
 	List<OrderItemResponse> findOrderItemResponsesByOrderId(@Param("orderId") Long orderId);
