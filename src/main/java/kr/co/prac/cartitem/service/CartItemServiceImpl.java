@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
 import kr.co.prac.cartitem.dto.CartItemRequest;
 import kr.co.prac.cartitem.dto.CartItemResponse;
 import kr.co.prac.cartitem.entity.CartItem;
@@ -20,6 +19,7 @@ import kr.co.prac.product.exception.ProductNotFoundException;
 import kr.co.prac.product.repository.ProductImageRepository;
 import kr.co.prac.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,15 +35,7 @@ public class CartItemServiceImpl implements CartItemService{
 	@Override
 	public List<CartItemResponse> viewCart(Long memberId) {
 		findMember(memberId);
-		List<CartItem> cartItems = cartItemRepository.findByMemberNumber(memberId);
-		for (CartItem cartItem : cartItems) {
-			Long productNumber = cartItem.getProduct().getNumber();
-			List<ProductImage> thumnailImages = productImageRepository.findByProduct_NumberAndThumbnailTrue(productNumber);
-			if(thumnailImages.size() >)
-			
-		}
-		
-		return cartItems.stream().map(CartItemResponse::new).toList();
+		return cartItemRepository.findCartItemResponsesByMemberId(memberId);
 	}
 
 	@Override
@@ -55,11 +47,14 @@ public class CartItemServiceImpl implements CartItemService{
 		if(cartItemOptional.isEmpty()) {
 			CartItem cartItem = CartItem.create(member, product, cartItemRequest.getCount());
 			CartItem savedCartItem = cartItemRepository.save(cartItem);
-			return new CartItemResponse(savedCartItem);
+			String imageUrl = productImageRepository.findByProduct_NumberAndThumbnailTrue(savedCartItem.getProduct().getNumber()).stream().findFirst().map(ProductImage::getImageUrl).orElse(null);
+			return new CartItemResponse(product.getNumber(), cartItem.getCount(), imageUrl);
 		} else {
 			CartItem existCartItem = cartItemOptional.get();
 			existCartItem.addCount(cartItemRequest.getCount());
-			return new CartItemResponse(existCartItem);
+			String imageUrl = productImageRepository.findByProduct_NumberAndThumbnailTrue(existCartItem.getProduct().getNumber()).stream().findFirst().map(ProductImage::getImageUrl).orElse(null);
+			return new CartItemResponse(product.getNumber(), existCartItem.getCount(), imageUrl);
+
 		}
 	}
 
@@ -68,7 +63,8 @@ public class CartItemServiceImpl implements CartItemService{
 
 		CartItem cartItem = findCartItem(cartItemId, memberId);
 		cartItem.addCount();
-		return new CartItemResponse(cartItem);
+		String imageUrl = productImageRepository.findByProduct_NumberAndThumbnailTrue(cartItem.getProduct().getNumber()).stream().findFirst().map(ProductImage::getImageUrl).orElse(null);
+		return new CartItemResponse(cartItem.getProduct().getNumber(), cartItem.getCount(), imageUrl);
 		
 		
 	}

@@ -11,13 +11,14 @@ public class OrderItemResponse {
 	private int unitPrice;
 	private int count;
 	private int totalPrice;
+	private String thumbnailUrl;
 
-	public OrderItemResponse(OrderItem orderItem) {
-		this.number = orderItem.getNumber();
+	public OrderItemResponse(OrderItem orderItem, String thumbnailUrl) {
 		this.productName = orderItem.getProduct().getName();
 		this.unitPrice = orderItem.getUnitPrice();
 		this.count = orderItem.getCount();
 		this.totalPrice = unitPrice * count;
+		this.thumbnailUrl = thumbnailUrl;
 	}
 
 }

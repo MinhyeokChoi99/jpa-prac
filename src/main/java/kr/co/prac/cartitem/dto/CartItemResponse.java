@@ -13,9 +13,9 @@ public class CartItemResponse {
 	
 	private String thumbnailImageUrl;
 	
-	public CartItemResponse(CartItem cartItem, String thumbnailImageUrl) {
-		this.productId = cartItem.getProduct().getNumber();
-		this.count = cartItem.getCount();
+	public CartItemResponse(Long productId, int count, String thumbnailImageUrl) {
+		this.productId = productId;
+		this.count = count;
 		this.thumbnailImageUrl = thumbnailImageUrl;
 	}
 	

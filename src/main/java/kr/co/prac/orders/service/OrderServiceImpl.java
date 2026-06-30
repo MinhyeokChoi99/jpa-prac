@@ -6,7 +6,9 @@ import java.util.List;
 import kr.co.prac.cartitem.entity.CartItem;
 import kr.co.prac.cartitem.exception.EmptyCartItemException;
 import kr.co.prac.cartitem.repository.CartItemRepository;
+import kr.co.prac.product.entity.ProductImage;
 import kr.co.prac.product.entity.ProductStatus;
+import kr.co.prac.product.repository.ProductImageRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,7 @@ public class OrderServiceImpl implements OrderService{
 	private final OrderItemRepository orderItemRepository;
 	private final ProductRepository productRepository;
 	private final CartItemRepository cartItemRepository;
+	private final ProductImageRepository productImageRepository;
 
 
 	@Override // 주문생성 -> 여러건 처리할수있게 수정
@@ -64,9 +67,12 @@ public class OrderServiceImpl implements OrderService{
 
 			Product product = prepareProductForOrder(productNumber, orderCreateRequest.getCount());
 
+			String thumbnailImageUrl = productImageRepository.findByProduct_NumberAndThumbnailTrue(productNumber).stream().findFirst().map(ProductImage::getImageUrl).orElse(null);
+
+
 			OrderItem orderItem = OrderItem.create(savedOrder, product, orderCreateRequest.getCount());
 			orderItemRepository.save(orderItem);
-			list.add(new OrderItemResponse(orderItem));
+			list.add(new OrderItemResponse(orderItem, thumbnailImageUrl));
 		}
 
 		return new OrderDetailResponse(savedOrder,list);
@@ -94,9 +100,12 @@ public class OrderServiceImpl implements OrderService{
 
 			Product product = prepareProductForOrder(productNumber, count);
 
+			String thumbnailImageUrl = productImageRepository.findByProduct_NumberAndThumbnailTrue(productNumber).stream().findFirst().map(ProductImage::getImageUrl).orElse(null);
+
+
 			OrderItem orderItem = OrderItem.create(savedOrder, product, count);
 			orderItemRepository.save(orderItem);
-			list.add(new OrderItemResponse(orderItem));
+			list.add(new OrderItemResponse(orderItem, thumbnailImageUrl));
 		}
 
 		cartItemRepository.deleteAll(cartItemByMemberId);
@@ -114,13 +123,9 @@ public class OrderServiceImpl implements OrderService{
 			throw new NotAuthorizedMemberException();
 		}
 
-		List<OrderItemResponse> orderItems = orderItemRepository.
-				findByOrdersNumber(orderId)
-				.stream()
-				.map(OrderItemResponse::new)
-				.toList();
+		List<OrderItemResponse> orderItemResponses = orderItemRepository.findOrderItemResponsesByOrderId(orderId);
 
-		return new OrderDetailResponse(order, orderItems);
+		return new OrderDetailResponse(order, orderItemResponses);
 
 	}
 
@@ -171,13 +176,9 @@ public class OrderServiceImpl implements OrderService{
 	public OrderDetailResponse findOneForAdmin(Long orderId) {
 		Orders order = ordersRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
 
-		List<OrderItemResponse> orderItems = orderItemRepository.
-				findByOrdersNumber(orderId)
-				.stream()
-				.map(OrderItemResponse::new)
-				.toList();
+		List<OrderItemResponse> orderItemResponses = orderItemRepository.findOrderItemResponsesByOrderId(orderId);
 
-		return new OrderDetailResponse(order, orderItems);
+		return new OrderDetailResponse(order, orderItemResponses);
 
 	}
 
