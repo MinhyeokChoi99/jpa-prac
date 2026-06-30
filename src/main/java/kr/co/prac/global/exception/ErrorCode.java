@@ -34,6 +34,8 @@ public enum ErrorCode {
 	NOT_AUTHORIZED_CANCEL(HttpStatus.FORBIDDEN, "주문 취소 권한이 없습니다"),
 	// 자신의 주문이 아닐 때
 	NOT_AUTHORIZED_MEMBER(HttpStatus.FORBIDDEN, "조회 권한이 없는 회원입니다"),
+	// 이미지가 존재하지 않을때
+	NO_SUCH_IMAGE(HttpStatus.NOT_FOUND, "이미지가 존재하지 않습니다"),
 	// 관리자가 아닐 때
 	NOT_AUTHORIZED_ADMIN(HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다"),
 	// 서버오류 -> GlobalExceptionHandler(Exception.class)

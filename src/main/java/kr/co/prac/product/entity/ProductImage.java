@@ -1,6 +1,7 @@
 package kr.co.prac.product.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import kr.co.prac.global.entity.BaseTimeEntity;
 import lombok.Getter;
 
@@ -27,6 +28,7 @@ public class ProductImage extends BaseTimeEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @NotBlank(message = "이미지 URL은 필수입니다.")
     @Column(name = "image_url", nullable = false, length = 1000)
     private String imageUrl;
 
@@ -53,8 +55,7 @@ public class ProductImage extends BaseTimeEntity {
         this.thumbnail = false;
     }
 
-    public void update(String imageUrl, int sortOrder) {
+    public void update(String imageUrl) {
         this.imageUrl = imageUrl;
-        this.sortOrder = sortOrder;
     }
 }

@@ -16,4 +16,6 @@ public interface ProductImageRepository extends JpaRepository<ProductImage,Long>
 
     // 지금까지 등록한 이미지 중에 sortOrder가 가장 높은 이미지 반환
     Optional<ProductImage> findTopByProductNumberOrderBySortOrderDesc(Long productNumber);
+    
+    Optional<ProductImage> findTopByProductNumberOrderBySortOrder(Long productNumber);
 }
