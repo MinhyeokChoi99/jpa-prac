@@ -15,7 +15,9 @@ import kr.co.prac.member.entity.Member;
 import kr.co.prac.member.exception.MemberNotFoundException;
 import kr.co.prac.member.repository.MemberRepository;
 import kr.co.prac.product.entity.Product;
+import kr.co.prac.product.entity.ProductImage;
 import kr.co.prac.product.exception.ProductNotFoundException;
+import kr.co.prac.product.repository.ProductImageRepository;
 import kr.co.prac.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -27,12 +29,20 @@ public class CartItemServiceImpl implements CartItemService{
 	private final MemberRepository memberRepository;
 	private final CartItemRepository cartItemRepository;
 	private final ProductRepository productRepository;
+	private final ProductImageRepository productImageRepository;
 	
 
 	@Override
 	public List<CartItemResponse> viewCart(Long memberId) {
 		findMember(memberId);
 		List<CartItem> cartItems = cartItemRepository.findByMemberNumber(memberId);
+		for (CartItem cartItem : cartItems) {
+			Long productNumber = cartItem.getProduct().getNumber();
+			List<ProductImage> thumnailImages = productImageRepository.findByProduct_NumberAndThumbnailTrue(productNumber);
+			if(thumnailImages.size() >)
+			
+		}
+		
 		return cartItems.stream().map(CartItemResponse::new).toList();
 	}
 

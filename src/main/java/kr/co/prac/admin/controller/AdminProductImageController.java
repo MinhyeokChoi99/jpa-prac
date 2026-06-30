@@ -35,7 +35,7 @@ public class AdminProductImageController {
 	}
 	
 	@PostMapping
-	public ProductImageResponse addProductImage(@PathVariable Long productNumber, @RequestBody ProductImageRequest productImageRequest) {
+	public ProductImageResponse addProductImage(@PathVariable Long productNumber, @RequestBody @Valid ProductImageRequest productImageRequest) {
 		return productImageService.addProductImage(productNumber, productImageRequest);
 	}
 	

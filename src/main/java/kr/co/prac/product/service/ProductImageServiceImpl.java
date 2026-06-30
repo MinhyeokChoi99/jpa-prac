@@ -29,7 +29,7 @@ public class ProductImageServiceImpl implements ProductImageService{
 	public List<ProductImageResponse> findProductImages(Long productNumber) {
 		productRepository.findById(productNumber).orElseThrow(ProductNotFoundException::new);
 		
-		return productImageRepository.findByProductNumberOrderBySortOrderAsc(productNumber).stream().map(ProductImageResponse::new).toList();
+		return productImageRepository.findByProduct_NumberOrderBySortOrderAsc(productNumber).stream().map(ProductImageResponse::new).toList();
 		
 	}
 
@@ -50,7 +50,7 @@ public class ProductImageServiceImpl implements ProductImageService{
 	@Override
 	public ProductImageResponse updateProductImage(Long productNumber,Long productImageNumber ,ProductImageRequest productImageRequest) {
 		productRepository.findById(productNumber).orElseThrow(ProductNotFoundException::new);
-		ProductImage productImage = productImageRepository.findByNumberAndProductNumber(productImageNumber, productNumber).orElseThrow(NoImageException::new);
+		ProductImage productImage = productImageRepository.findByNumberAndProduct_Number(productImageNumber, productNumber).orElseThrow(NoImageException::new);
 		productImage.update(productImageRequest.getImageUrl());
 		return new ProductImageResponse(productImage);
 	}
@@ -59,9 +59,9 @@ public class ProductImageServiceImpl implements ProductImageService{
 	@Override
 	public ProductImageResponse markAsThumbnail(Long productNumber, Long productImageNumber) {
 
-		ProductImage productImage = productImageRepository.findByNumberAndProductNumber(productImageNumber, productNumber).orElseThrow(NoImageException::new);
+		ProductImage productImage = productImageRepository.findByNumberAndProduct_Number(productImageNumber, productNumber).orElseThrow(NoImageException::new);
 		
-		List<ProductImage> productImages = productImageRepository.findByProductNumberAndThumbnailTrue(productNumber);
+		List<ProductImage> productImages = productImageRepository.findByProduct_NumberAndThumbnailTrue(productNumber);
 		
 		for (ProductImage p : productImages) {
 			p.unmarkAsThumbnail();
@@ -74,14 +74,14 @@ public class ProductImageServiceImpl implements ProductImageService{
 
 	@Override
 	public void deleteProductImage(Long productNumber, Long productImageNumber) {
-		ProductImage productImage = productImageRepository.findByNumberAndProductNumber(productImageNumber, productNumber).orElseThrow(NoImageException::new);
+		ProductImage productImage = productImageRepository.findByNumberAndProduct_Number(productImageNumber, productNumber).orElseThrow(NoImageException::new);
 		
 		boolean isThumbnail = productImage.isThumbnail();
 		productImageRepository.delete(productImage);
 		productImageRepository.flush();
 		
 		if(isThumbnail) {
-			Optional<ProductImage> restImage = productImageRepository.findTopByProductNumberOrderBySortOrder(productNumber);
+			Optional<ProductImage> restImage = productImageRepository.findTopByProduct_NumberOrderBySortOrderAsc(productNumber);
 			if(restImage.isPresent()) {
 				restImage.get().markAsThumbnail();
 			}
@@ -89,7 +89,7 @@ public class ProductImageServiceImpl implements ProductImageService{
 	}
 	
 	private int findNextSortOrder(Long productNumber) {
-		Optional<ProductImage> productOptional = productImageRepository.findTopByProductNumberOrderBySortOrderDesc(productNumber);
+		Optional<ProductImage> productOptional = productImageRepository.findTopByProduct_NumberOrderBySortOrderDesc(productNumber);
 		if(productOptional.isPresent()) {
 			return productOptional.get().getSortOrder() + 1;
 		} else {
