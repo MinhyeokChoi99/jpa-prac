@@ -26,7 +26,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long>{
             join ci.product p
             left join ProductImage pi
                 on pi.product = p
-               and pi.imageUrl = true
+               and pi.thumbnail = true
             where ci.member.number = :memberId
             """)
 	List<CartItemResponse> findCartItemResponsesByMemberId(@Param("memberId") Long memberId);

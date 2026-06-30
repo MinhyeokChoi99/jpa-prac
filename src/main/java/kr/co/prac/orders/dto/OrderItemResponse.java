@@ -13,6 +13,14 @@ public class OrderItemResponse {
 	private int totalPrice;
 	private String thumbnailUrl;
 
+	public OrderItemResponse(String productName, int unitPrice, int count, String thumbnailUrl) {
+		this.productName = productName;
+		this.unitPrice = unitPrice;
+		this.count = count;
+		this.totalPrice = unitPrice * count;
+		this.thumbnailUrl = thumbnailUrl;
+	}
+
 	public OrderItemResponse(OrderItem orderItem, String thumbnailUrl) {
 		this.productName = orderItem.getProduct().getName();
 		this.unitPrice = orderItem.getUnitPrice();

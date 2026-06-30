@@ -1,10 +1,12 @@
+# PROJECT_LOG.md
+
 # Project Log: jpa-prac
 
-This document tracks the current progress, decisions, completed work, blockers, and next steps for the `jpa-prac` project.
+This document tracks current progress, decisions, completed work, blockers, and next steps for the `jpa-prac` project.
 
 Use this file as a handoff document when continuing the project in a new chat session.
 
-_Last updated: 2026-06-29 (Asia/Seoul)_
+_Last updated: 2026-07-01 (Asia/Seoul)_
 
 ---
 
@@ -17,7 +19,7 @@ _Last updated: 2026-06-29 (Asia/Seoul)_
 - Main domains:
   - Member
   - Product
-  - Planned ProductImage
+  - ProductImage
   - Orders
   - OrderItem
   - CartItem
@@ -40,17 +42,16 @@ The project should be developed step by step, with emphasis on:
 - Incremental feature development
 - Authentication and authorization correctness
 - Session management structure
-- Test learning and test coverage
 - Backend-centered business logic
+- Product-management realism
 
 The assistant role should be closer to a Spring/JPA teacher and code reviewer, not only a code generator.
 
 Important frontend/backend boundary:
 
 - The user is responsible for backend logic.
-- The assistant may help generate frontend UI.
 - Frontend code must not hide, patch, or compensate for backend defects.
-- Backend remains the source of truth for authentication, authorization, validation, stock changes, order ownership, product status transitions, cart ownership, and persistence.
+- Backend remains the source of truth for authentication, authorization, validation, stock changes, order ownership, product status transitions, cart ownership, product image ownership, and persistence.
 - Frontend role checks are display/routing only.
 
 ---
@@ -59,26 +60,19 @@ Important frontend/backend boundary:
 
 Current recommended priority:
 
-1. Commit current cart/order-from-cart/refactoring progress.
-2. Add `ProductImage` entity.
-3. Add `ProductImageRepository`.
-4. Add ProductImage DTOs, service, and admin controller APIs.
-5. Update product responses to include representative image and/or image list.
-6. Add focused tests for cart/order-from-cart and ProductImage behavior.
-7. Keep frontend as an API-calling UI only.
+1. Add admin product image file upload.
+2. Keep existing URL-based image registration temporarily.
+3. Store uploaded files locally first.
+4. Save the generated accessible URL/path into `ProductImage.imageUrl`.
+5. Reuse the existing thumbnail and sortOrder logic.
+6. Manually test upload -> admin image list -> cart/order thumbnail flow.
+7. After file upload is stable, add focused tests.
 
-Near-term ProductImage implementation order:
+The next priority is not broad test-code writing yet.
 
-```text
-1. ProductImage entity
-2. ProductImageRepository
-3. ProductImageRequest / ProductImageResponse
-4. AdminProductImageService
-5. AdminProductImageController
-6. Product response DTO integration
-7. Manual API testing
-8. Service/repository tests
-```
+Reason:
+
+The admin product image feature currently works with URL strings, but a realistic admin product-management flow needs actual file upload and file management.
 
 ---
 
@@ -113,9 +107,9 @@ Near-term ProductImage implementation order:
 - Do not generate files with suffixes like `_updated`.
 - Documentation format should remain consistent with the existing numbered section structure.
 
-### 2026-06-29 Security/Admin/Product Progress
+### 2026-06-29
 
-- Spring Security session login is now treated as the current authentication direction.
+- Spring Security session login is the current authentication direction.
 - Admin APIs are protected as admin-only backend APIs.
 - Admin product CRUD has been added.
 - Product status management has been added:
@@ -134,313 +128,286 @@ Near-term ProductImage implementation order:
 - Current login page should show only:
   - login form
   - signup form
-- Browser flow was mostly verified by the user.
-- Backend work should not be replaced by frontend patching.
 
-### 2026-06-29 Testing Decision
+### 2026-07-01
 
-Testing was selected as an important learning and implementation phase.
-
-Testing should include:
-
-- domain unit tests
-- service unit tests with Mockito
-- repository tests with `@DataJpaTest`
-- controller/security integration tests with MockMvc
-- broader integration tests later if needed
-
-The user has limited prior experience writing tests, so test work must include explanation of:
-
-- what behavior is being tested
-- what data is prepared
-- what action is executed
-- what result is asserted
-- what type of test is being written
-
-Recommended test implementation order:
-
-1. Learn JUnit 5 and AssertJ syntax.
-2. Write pure domain unit tests for `Product`.
-3. Write order stock/cancel-related domain tests.
-4. Write service unit tests with Mockito.
-5. Write repository tests with `@DataJpaTest`.
-6. Write controller/security integration tests with MockMvc.
-7. Add broader API flow integration tests if needed.
-
-Important testing distinction:
-
-- Domain unit tests usually do not require Mockito.
-- Service unit tests often use Mockito to mock repositories, encoders, and other dependencies.
-- Repository tests should not mock repositories; use `@DataJpaTest`.
-- Controller/security integration tests should verify real API/security behavior with MockMvc.
+- Product image thumbnail integration was implemented and manually tested.
+- Separate `ProductImage` entity approach is confirmed.
+- Do not move back to a single `Product.imageUrl` primary design.
+- Cart and order responses now use product thumbnail URLs.
+- The immediate next feature is admin product image file upload.
+- Broad test-code writing is deferred until file upload is implemented and manually verified.
 
 ---
 
-## 5. CartItem Implementation Progress
+## 5. ProductImage Thumbnail Integration Completed
 
-### 2026-06-29 CartItem Basic CRUD
+Status: completed and manually verified.
 
-CartItem feature was implemented under `kr.co.prac.cartitem`.
+This phase connected product images to cart and order responses.
 
-Implemented or discussed components:
+Implemented or confirmed:
 
-- `CartItem` entity
-- `CartItemRepository`
-- `CartItemRequest`
-- `CartItemResponse`
-- `CartItemService`
-- `CartItemServiceImpl`
-- `CartItemController`
-- `CartItemNotFoundException`
-- `EmptyCartItemException`
+- Separate `ProductImage` entity is used instead of a single `Product.imageUrl` field.
+- Product image admin APIs exist under `/admin/products/{productNumber}/images`.
+- Product can have multiple images.
+- One representative thumbnail image is selected by `thumbnail = true`.
+- First image should become thumbnail automatically.
+- Thumbnail switching should leave exactly one thumbnail image.
+- Deleting the current thumbnail should promote another remaining image.
+- Cart item response includes product thumbnail URL.
+- Direct order creation response includes product thumbnail URL.
+- Order-from-cart response includes product thumbnail URL.
+- Order detail response includes product thumbnail URL.
 
-Implemented API direction:
+Manual test flow completed:
 
 ```text
-GET    /cart/items
-POST   /cart/items
-PATCH  /cart/items/{cartItemId}/increase
-PATCH  /cart/items/{cartItemId}/decrease
-DELETE /cart/items/{cartItemId}
+Admin login
+-> product creation
+-> product image registration by URL
+-> multiple image registration
+-> thumbnail switching
+-> user login
+-> add to cart
+-> GET /cart/items thumbnail check
+-> POST /orders/from-cart thumbnail check
+-> cart cleared check
+-> GET /orders/{orderId} thumbnail check
+-> POST /orders direct order thumbnail check
+-> thumbnail deletion/fallback check
 ```
 
-Important completed decisions:
+Important bugs fixed during this phase:
 
-- Cart item APIs use authenticated principal memberId instead of client-provided memberId.
-- `CartItemRequest` should not contain `memberId`.
-- `CartItemRequest` contains `productId` and `count`.
-- Required numeric request values use `@NotNull` and `@Positive`.
-- Cart item update/delete lookup should be owner-scoped by memberId and cartItemId.
-- Same product for same member should increase quantity rather than create duplicate rows.
-- `CartItem` has a unique member-product constraint.
-- `PATCH /cart/items/{cartItemId}/decrease` deletes the row when count is 1.
-- Cart items do not reserve stock.
-- Stock decreases only when an order is created.
+1. Wrong `@Query` import
+   - Incorrect: `org.springframework.data.jdbc.repository.query.Query`
+   - Correct: `org.springframework.data.jpa.repository.Query`
 
-Current caveat:
+2. Wrong JPQL image field
+   - Incorrect: `pi.thumbnailUrl`
+   - Correct: `pi.imageUrl`
 
-- CartItem service/controller tests still need to be added.
-- Manual API flow should be verified after each major backend change.
+3. Wrong JPQL thumbnail condition
+   - Incorrect: `pi.imageUrl = true`
+   - Correct: `pi.thumbnail = true`
+
+4. Missing DTO projection constructor
+   - JPQL `select new OrderItemResponse(...)` requires a matching constructor in `OrderItemResponse`.
+
+5. Insufficient product image response DTO
+   - `ProductImageResponse` should expose `number`, `productNumber`, `imageUrl`, `thumbnail`, and `sortOrder` for admin image management and manual verification.
+
+Current confirmed status:
+
+- Compile passes.
+- Manual API testing passes according to user verification.
+- URL-based product image registration is stable enough to extend toward file upload.
 
 ---
 
-## 6. Order From Cart Progress
+## 6. Current Product Image Design
 
-### 2026-06-29 Order From Cart
-
-Added cart-based order creation.
-
-Implemented API:
+Current image storage model:
 
 ```text
-POST /orders/from-cart
+Product 1:N ProductImage
 ```
 
-Implemented service method:
+Current `ProductImage` role:
+
+- Store the product-image relationship.
+- Store the accessible image URL/path in `imageUrl`.
+- Track whether the image is the representative thumbnail.
+- Track display order through `sortOrder`.
+
+Current request model:
+
+```json
+{
+  "imageUrl": "https://example.com/product-image.jpg"
+}
+```
+
+Important decision:
+
+The current URL-based registration should remain for now.
+
+Reason:
+
+- It is already manually tested.
+- It is useful for quick debugging.
+- It does not block file upload.
+- File upload can reuse the same `ProductImage.imageUrl` field after generating a local accessible URL/path.
+
+---
+
+## 7. Next Feature: Admin Product Image File Upload
+
+Status: next task.
+
+Goal:
+
+Allow admin users to upload and manage actual image files when registering product images.
+
+Recommended first implementation:
+
+Local file upload.
+
+Do not start with S3, NCP Object Storage, or other cloud object storage yet.
+
+Reason:
+
+- Local upload is easier to understand.
+- It helps clarify multipart request handling.
+- It makes file path, URL, and static resource mapping easier to debug.
+- Cloud storage can be introduced later behind a storage abstraction.
+
+Target API:
+
+```text
+POST /admin/products/{productNumber}/images/upload
+Content-Type: multipart/form-data
+file=<image file>
+```
+
+Target backend flow:
+
+```text
+Admin uploads MultipartFile
+-> validate file
+-> store file locally
+-> generate accessible URL/path
+-> save URL/path into ProductImage.imageUrl
+-> apply thumbnail and sortOrder rules
+-> return ProductImageResponse
+```
+
+Recommended package:
+
+```text
+kr.co.prac.global.storage
+```
+
+Recommended classes:
+
+```text
+StorageService
+LocalStorageService
+StorageProperties
+```
+
+Recommended interface:
 
 ```java
-OrderDetailResponse orderFromCart(Long memberId);
+public interface StorageService {
+    String store(MultipartFile file);
+    void delete(String storedUrlOrPath);
+}
 ```
 
-Current order-from-cart flow:
+Recommended controller method shape:
 
-1. Find current member.
-2. Find cart items by member number.
-3. Throw `EmptyCartItemException` if the cart is empty.
-4. Create `Orders`.
-5. For each cart item:
-   - find product
-   - validate `ProductStatus.ACTIVE`
-   - decrease product stock
-   - create `OrderItem`
-   - add `OrderItemResponse`
-6. Delete cart items after successful order creation.
-7. Return `OrderDetailResponse`.
+```java
+@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ProductImageResponse uploadProductImage(
+        @PathVariable Long productNumber,
+        @RequestPart MultipartFile file
+) {
+    return productImageService.uploadProductImage(productNumber, file);
+}
+```
 
-Important backend rule:
+Recommended service method:
 
-- Cart must not replace backend order validation.
-- Product status and stock are checked again at order time.
-- Cart items are deleted only after successful order creation.
-- If an exception occurs, transaction rollback should preserve stock and cart items.
+```java
+ProductImageResponse uploadProductImage(Long productNumber, MultipartFile file);
+```
 
-### Direct Order Update
+Recommended behavior:
 
-`createOrder()` also validates `ProductStatus.ACTIVE` now, so hidden or deleted products should not be orderable through direct API calls.
-
-### Light Refactoring Decision
-
-The order creation logic was lightly refactored to reduce duplicated product lookup/status check/stock decrease behavior.
-
-Decision:
-
-- Do not over-engineer the order flow yet.
-- Avoid introducing a full command object or service factory at this stage.
-- Current small private-method refactoring is acceptable.
-- Deeper refactoring can be revisited after tests are added.
-
-Recommended next tests:
-
-- direct order success
-- direct order empty request failure
-- direct order inactive product failure
-- order-from-cart success
-- order-from-cart empty cart failure
-- order-from-cart inactive product failure
-- order-from-cart deletes cart items after success
+- Empty file should be rejected.
+- Non-image file should be rejected.
+- File size should eventually be limited.
+- Stored filename should be unique.
+- Directory should be created automatically when missing.
+- Stored file should be accessible through a URL such as `/uploads/product-images/{filename}`.
+- The URL/path should be saved into `ProductImage.imageUrl`.
+- Existing first-image thumbnail logic should still apply.
+- Existing thumbnail switching logic should still apply.
+- Existing delete/fallback logic should still apply.
 
 ---
 
-## 7. Testing Progress
+## 8. File Upload Manual Test Plan
 
-Current testing state:
-
-- `OrderServiceTest` was accidentally reduced/deleted during editing and then restored.
-- `OrderServiceTest` includes the basic `create_order` test.
-- `OrderServiceTest` includes the `empty_request` test.
-- `CartItemRepository` mock was added because `OrderServiceImpl` now depends on it.
-- Existing tests should not be deleted just because DTO construction is inconvenient.
-- For DTOs without setters/constructors, `ReflectionTestUtils` can be used in tests.
-
-Recommended next test additions:
+After implementation, manually test in this order.
 
 ```text
-1. orderFromCart_success
-2. orderFromCart_empty_cart
-3. direct_order_inactive_product
-4. order_from_cart_inactive_product
-5. cart item service add/increase/decrease/delete tests
-6. ProductImage repository/service tests after ProductImage implementation
+1. Admin login.
+2. Create product.
+3. Upload product image file with multipart/form-data.
+4. Confirm response contains ProductImageResponse.
+5. Confirm imageUrl points to `/uploads/...`.
+6. Open returned imageUrl in browser.
+7. Upload second image file.
+8. Confirm only the first image is thumbnail unless changed.
+9. Change thumbnail to second uploaded image.
+10. Confirm image list has exactly one thumbnail.
+11. User login.
+12. Add product to cart.
+13. GET /cart/items and confirm uploaded image URL appears.
+14. POST /orders/from-cart and confirm uploaded image URL appears.
+15. GET /orders/{orderId} and confirm uploaded image URL appears.
+16. Delete thumbnail image.
+17. Confirm fallback thumbnail behavior.
+18. Confirm physical local file deletion policy if implemented.
 ```
 
 ---
 
-## 8. ProductImage Decision
+## 9. Testing Roadmap Update
 
-### 2026-06-29 Product Image Design Change
+Testing remains important, but the immediate sequence is updated.
 
-The project should not use a single `Product.imageUrl` field as the final design because the user clarified that:
+Current order:
 
-1. A product may have only one representative image.
-2. A product may have multiple images, with one representative image among them.
+1. Implement local product image file upload.
+2. Manually verify the full upload-to-thumbnail flow.
+3. Add focused file-upload and product-image tests.
+4. Then expand to broader cart/order/security tests.
 
-Decision:
+Recommended focused tests after upload implementation:
 
-```text
-Product 1 : N ProductImage
-```
-
-Use a separate `ProductImage` entity/table instead of adding only `imageUrl` to `Product`.
-
-Planned `ProductImage` fields:
-
-```text
-number
-product
-imageUrl
-thumbnail or representative flag
-sortOrder
-createdAt / updatedAt through BaseTimeEntity
-```
-
-Recommended initial implementation:
-
-- Store only image URLs first.
-- Do not implement file upload yet.
-- Do not implement S3/object storage yet.
-- Do not add multiple storage strategies yet.
-- Add upload later by saving the uploaded file and storing the generated URL in `ProductImage.imageUrl`.
-
-Representative image rule:
-
-- A product should have at most one representative image.
-- Initially enforce this in service logic.
-- If a new image is marked as representative, existing representative images for the same product should be unmarked.
-- Database-level partial unique constraints can be considered later if needed.
-
-Planned admin APIs:
-
-```text
-POST   /admin/products/{productNumber}/images
-GET    /admin/products/{productNumber}/images
-PATCH  /admin/products/{productNumber}/images/{imageId}/thumbnail
-PUT    /admin/products/{productNumber}/images/{imageId}
-DELETE /admin/products/{productNumber}/images/{imageId}
-```
-
-Planned public response behavior:
-
-- Product list: expose representative image URL only.
-- Product detail: expose full image list ordered by `sortOrder`.
+- Empty upload rejected.
+- Non-image upload rejected.
+- Image upload stores file.
+- Image upload creates `ProductImage`.
+- First uploaded image becomes thumbnail.
+- Second uploaded image is not thumbnail.
+- Thumbnail switching still works.
+- Deleting current thumbnail promotes another image.
+- Cart response uses uploaded image URL.
+- Order detail response uses uploaded image URL.
 
 ---
 
-## 9. Current Blockers and Risks
+## 10. Current Immediate Recommendation
 
-Current blockers:
+Start file upload implementation.
 
-- ProductImage entity has not been implemented yet.
-- Product response DTOs do not yet include product images.
-- Product image API design must be implemented before frontend image display.
-- Cart/order-from-cart flow should still be manually verified.
-- `orderFromCart` tests should be added.
+Recommended implementation order:
 
-Risks:
+1. Add upload properties.
+2. Add static resource mapping for `/uploads/**`.
+3. Add `StorageService`.
+4. Add `LocalStorageService`.
+5. Add product image upload service method.
+6. Add admin multipart upload endpoint.
+7. Manually test file upload and URL access.
+8. Verify existing cart/order thumbnail responses still work.
+9. Add focused tests only after upload flow is confirmed.
 
-- Multiple product images can create N+1 query issues if product list returns image data naively.
-- Representative image uniqueness is a business rule that must be enforced consistently.
-- File upload should not be added until URL-based ProductImage flow is stable.
-- Frontend should not fake product image behavior if backend response does not support it yet.
+Do not remove the existing URL-registration endpoint yet.
 
----
-
-## 10. Next Concrete Steps
-
-Immediate next steps:
-
-1. Commit current cart/order-from-cart/refactoring progress.
-2. Add `ProductImage` entity under the product domain.
-3. Add `ProductImageRepository`.
-4. Add `ProductImageRequest` and `ProductImageResponse`.
-5. Add admin service/controller for product image management.
-6. Add representative image setting behavior.
-7. Update product response DTOs.
-8. Add manual API tests.
-9. Add service/repository tests.
-
-Suggested next commit sequence:
-
-```bash
-git commit -m "refactor: simplify order creation flow"
-git commit -m "docs: update project context and log"
-git commit -m "feat: add product image entity"
-git commit -m "feat: add product image management APIs"
-```
-
-If the current code and documentation are committed together, use:
-
-```bash
-git commit -m "docs: update project context after cart order flow"
-```
-
----
-
-## 11. Assistant Guidance for Future Sessions
-
-When continuing this project:
-
-- Start by checking `PROJECT_CONTEXT.md` and `PROJECT_LOG.md`.
-- Then inspect the current GitHub code before giving exact code review.
-- Speak Korean unless the user asks otherwise.
-- Review diffs directly and say whether they are commit-ready.
-- Prioritize correctness and learning over over-engineering.
-- Do not recommend JWT before session/Spring Security basics are clear.
-- For ProductImage, start with URL storage and `Product 1 : N ProductImage`.
-- Do not jump to file upload before ProductImage URL flow is stable.
-- For testing, explain purpose, setup, action, assertion, and test type.
-- Do not add frontend logic that compensates for backend defects.
-- Do not focus on whitespace-only issues unless requested.
-- Use exact filenames:
-  - `PROJECT_CONTEXT.md`
-  - `PROJECT_LOG.md`
-- Do not add `_updated` to generated file names.
+Do not start broad test-code work until admin file upload is working.

@@ -1,22 +1,21 @@
-# Project Context: jpa-prac
+# PROJECT_CONTEXT.md
 
-_Last updated: 2026-06-29 (Asia/Seoul)_
+# Project Context: jpa-prac
 
 ## 1. Project Identity
 
 - Repository: `https://github.com/MinhyeokChoi99/jpa-prac`
 - Project name: `jpa-prac`
-- Main purpose: Java + Spring + MySQL practice project
-- Long-term purpose: Grow into a portfolio-level, production-minded Spring web application
-- Main domains: `member`, `product`, `product_image` planned, `orders`, `order_item`, `cartitem`, Spring Security session-based `login`, and `admin`
+- Current purpose: Java + Spring + MySQL practice project
+- Long-term purpose: Build and deploy a web application that feels close to a real commercial service
+- Main domain: Product, member, order, and order item management
 - User language: Korean
-- Preferred assistant style: Korean explanation, Java/Spring examples, direct code review, incremental production-minded guidance
-
-The project is being developed step by step to study Spring MVC, JPA relationships, DTO design, business rules, exception handling, authentication, authorization, session management, testing, and future production-minded backend architecture.
+- Preferred assistant response style: Korean explanation + Java/Spring code examples
+- Documentation language: English is acceptable and preferred for technical reuse
 
 This project is not just a simple CRUD exercise. It is intended to grow gradually into a portfolio-level and production-minded Spring web application.
 
-The user wants to study Java and Spring by building, reviewing, refactoring, testing, and extending this project step by step.
+The user wants to study Java and Spring by building, reviewing, refactoring, and extending this project step by step.
 
 ---
 
@@ -32,7 +31,6 @@ When assisting with this project, do not only provide working code. Explain:
 - How to refactor the code gradually
 - What should be fixed now versus what can be improved later
 - What the next feature should be and why
-- How to understand and write tests, especially because the user has limited test-writing experience
 
 The user wants feedback on:
 
@@ -43,124 +41,85 @@ The user wants feedback on:
 - Feature roadmap
 - Portfolio-readiness
 - Production-readiness
-- Test strategy and test code quality
 
 ---
 
 ## 3. Current Confirmed Tech Stack
 
-Current confirmed stack:
+Current stack:
 
 - Java 21
-- Spring Boot 4.1.0
+- Spring Boot
 - Spring Web MVC
 - Spring Data JPA
-- Spring Data JDBC dependency/module is present, but actual repositories are JPA repositories
+- Spring Data JDBC
 - Bean Validation
 - MySQL
 - H2 for tests
 - Lombok
 - Springdoc OpenAPI / Swagger
 - Maven
-- Jakarta Servlet API through Spring Web/Tomcat
+
+Primary runtime database:
+
+- MySQL
+
+Test database:
+
+- H2 in MySQL compatibility mode
+
+Potential future stack to study and add:
+
 - Spring Security
-- Spring Security Crypto is used for password encoding
-- BCryptPasswordEncoder is configured through `PasswordEncoder`
-- Static frontend served from Spring Boot under `src/main/resources/static`
-- QueryDSL dependencies are present, but custom QueryDSL repository/query usage has not been confirmed yet
-
-Current authentication/security stack status:
-
-- Spring Security session login is the current authentication direction.
-- Passwords are encoded with BCrypt during signup.
-- Login verifies passwords through Spring Security authentication flow and/or password encoder-backed logic.
-- `CustomUserDetails` and `CustomUserDetailsService` are part of the security model.
-- `SecurityContextHolder` and `HttpSessionSecurityContextRepository` are used for session-backed authentication.
-- `SecurityConfig` disables default form login, HTTP Basic, default logout, and CSRF for the current learning/testing stage.
-- Public endpoints and static resources are explicitly permitted.
-- `/admin/**` should be protected as ADMIN-only.
-- Redis Session has not been introduced yet.
-- JWT has not been introduced yet.
-
-Potential future stack:
-
-- Spring Session
-- Redis Session
-- JWT
-- Spring profiles
+- Session-based login or JWT authentication
+- Spring Boot profiles
 - Flyway or Liquibase
-- QueryDSL custom repositories
+- QueryDSL
+- Redis
 - Docker
 - GitHub Actions
 - Testcontainers
-- Cloud deployment
-- Object storage for product image upload later
+- AWS, NCP, or another cloud platform
+- Nginx
+- Monitoring/logging tools
 
 ---
 
-## 4. Current Confirmed Repository State
+## 4. Current Known Repository State
 
-Current packages/domains include:
+The current repository appears to include the following domains:
 
-- `member`
-- `product`
-- `orders`
-- `cartitem`
-- `login`
-- `admin`
-- `global.exception`
-- `global.entity`
-- `global.config`
-- `global.security`
-- static frontend resources
+- Member
+- Product
+- Orders
+- OrderItem
 
-Current implemented features include:
+The current project appears to include:
 
-- Member signup
-- BCrypt password encoding for signup
-- Login/logout
-- Spring Security session-based authentication direction
-- `CustomUserDetails`
-- `CustomUserDetailsService`
-- Current-member lookup, update, and delete APIs
-- Product public list API
-- Product status management with `ProductStatus`
-- Admin product CRUD APIs
-- Admin product hide/show/delete APIs
-- Order detail/create/cancel flows
-- Current-member order lookup
-- Admin member lookup/delete APIs
-- Admin all-orders lookup API
-- Admin order detail lookup API
-- DTO-based request/response separation
-- Basic validation for order creation and login request
-- Product stock decrease and restore logic
-- Product status validation during order creation
-- Cart item add/view/increase/decrease/delete APIs
-- Cart item ownership validation using authenticated member ID
-- Cart item unique member-product behavior
-- Order-from-cart flow through `POST /orders/from-cart`
-- Empty cart validation through `EmptyCartItemException`
-- Cart item cleanup after successful order-from-cart
-- Global exception handling with `BusinessException`, `ErrorCode`, and `ErrorResponse`
-- JPA auditing with `BaseTimeEntity`
-- Static frontend page that calls backend APIs
-- Frontend login/register screen
-- USER dashboard flow
-- ADMIN dashboard flow
+- Member CRUD
+- Product list API
+- Order list API
+- Order detail API
+- Order creation API
+- Order cancellation logic
+- Member-specific order lookup
+- Basic DTO separation
+- Basic validation for order creation
+- Product stock decrease on order creation
+- Product stock restore on order cancellation
+- Static HTML page that calls backend APIs
+- MySQL runtime configuration
+- H2 test configuration
+- Some unit/integration tests for member-related logic
 
-Current important design state:
+Seed data currently includes:
 
-- General member APIs are `/members/me` centered.
-- Admin member APIs are separated into `AdminMemberController` under `/admin/members`.
-- Admin order APIs are separated into `AdminOrderController` under `/admin/orders`.
-- Admin product APIs are separated under `/admin/products`.
-- Public `GET /products` returns only `ACTIVE` products.
-- Admin product list returns all products, including `ACTIVE`, `HIDDEN`, and `DELETED`.
-- Product deletion is soft delete through `ProductStatus.DELETED`.
-- Direct order creation and cart order creation should both validate product status and stock at the backend layer.
-- Static frontend exists only to call and demonstrate backend APIs.
-- Frontend must not compensate for backend business logic defects.
+- Products
+- Members
+- Orders
+- Order items
+
+The project is already beyond a pure CRUD toy example because it contains basic business behavior around orders and stock.
 
 ---
 
@@ -168,34 +127,31 @@ Current important design state:
 
 ### Member
 
-A member represents a user/customer-like entity and is also the authentication subject.
+A member represents a user/customer-like entity.
 
 Known or expected fields:
 
 - number
 - name
 - email
-- password
-- role
 
-Current member-related features include:
+Current member-related features appear to include:
 
-- Signup through `POST /members`
-- Login through `POST /members/login`
-- Logout through `POST /members/logout`
-- Current-user lookup through `GET /members/me`
-- Current-user update through `PUT /members/me`
-- Current-user deletion through `DELETE /members/me`
-- Current user's order lookup through `GET /members/me/orders`
-- Admin member lookup/delete through `/admin/members`
+- Create member
+- Find member by ID
+- Find all members
+- Update member
+- Delete member
+- Find orders by member
 
-Important direction:
+Important future direction:
 
-- Email should remain the likely unique login identifier.
-- Password is encoded with BCrypt.
-- Role exists as `USER` and `ADMIN`.
-- User-specific APIs should use the authenticated principal/security context, not client-provided member IDs.
-- Admin authorization should remain backend-enforced.
+- Member should eventually become the authentication subject.
+- Email should probably become a unique login identifier.
+- Password should be added only when Spring Security is introduced.
+- Member roles should be added later, such as `USER` and `ADMIN`.
+
+---
 
 ### Product
 
@@ -207,79 +163,24 @@ Known or expected fields:
 - name
 - price
 - stock
-- description
-- productStatus
 
-Current product behavior includes:
+Current product behavior appears to include:
 
-- Public product list retrieval through `GET /products`
-- Admin product list retrieval through `GET /admin/products`
-- Admin product detail retrieval
-- Admin product creation
-- Admin product update
-- Product hide/show
-- Product soft delete
+- Product list retrieval
 - Stock decrease
 - Stock increase
 - Stock validation when order quantity exceeds available stock
-- Backend product status validation when creating orders
 
-Current product statuses:
+Important future direction:
 
-```java
-public enum ProductStatus {
-    ACTIVE,
-    HIDDEN,
-    DELETED
-}
-```
+- Add full product CRUD for admin use.
+- Add product detail API.
+- Add product search/filtering.
+- Add product category.
+- Add product image support later.
+- Prevent direct arbitrary stock mutation from controllers.
 
-Important next image direction:
-
-- Do not add only `Product.imageUrl` because the project may support multiple product images.
-- Add a separate `ProductImage` entity/table.
-- Model the relationship as `Product 1 : N ProductImage`.
-- A product may have only one representative image, or multiple images with exactly one representative image.
-- Start with URL storage only: `ProductImage.imageUrl`.
-- Do not start with `MultipartFile` upload, local file storage, S3, or object storage yet.
-- Later file upload should store the resulting accessible URL into `ProductImage.imageUrl`.
-
-### ProductImage planned
-
-ProductImage is the selected next feature.
-
-Expected fields:
-
-- number
-- product
-- imageUrl
-- thumbnail or representative flag
-- sortOrder
-
-Expected behavior:
-
-- An admin can add an image URL to a product.
-- A product can have one or many images.
-- One image can be marked as representative/thumbnail.
-- Product list APIs may expose only the representative image URL.
-- Product detail APIs may expose the full image list.
-- If a new image is marked as representative, existing representative images for the same product should be unmarked.
-
-Recommended entity direction:
-
-```text
-Product 1 ─ N ProductImage
-```
-
-Initial API direction:
-
-```text
-POST   /admin/products/{productNumber}/images
-GET    /admin/products/{productNumber}/images
-PATCH  /admin/products/{productNumber}/images/{imageId}/thumbnail
-PUT    /admin/products/{productNumber}/images/{imageId}
-DELETE /admin/products/{productNumber}/images/{imageId}
-```
+---
 
 ### Orders
 
@@ -292,29 +193,24 @@ Known or expected fields:
 - orderDate
 - status
 
-Current order behavior includes:
+Current order behavior appears to include:
 
-- Direct order creation for the current logged-in member through `POST /orders`
-- Cart-based order creation through `POST /orders/from-cart`
-- Owner-restricted order detail lookup
-- Owner-restricted order cancellation
-- Current-member order list lookup
-- Admin all-order lookup
-- Admin unrestricted order detail lookup
-- Product stock decrease on order creation
-- Product stock restoration on order cancellation
-- Duplicate cancellation prevention
-- ProductStatus.ACTIVE validation during direct order and cart order
-- Cart item deletion after successful order-from-cart
+- Order list retrieval
+- Order detail retrieval
+- Order creation
+- Order cancellation
+- Member-specific order lookup
 
 Important future direction:
 
-- Keep order status transition rules clear.
+- Use clearer order status transition rules.
 - Prevent invalid status changes.
-- Keep order items in order detail response.
-- Keep total price calculation in response DTOs.
+- Separate order creation request into a wrapper DTO.
+- Return order items in order detail response.
+- Add order total price.
 - Add payment-ready/payment-completed concepts later.
-- The current order creation logic has been lightly refactored, but deeper cleanup can be deferred.
+
+---
 
 ### OrderItem
 
@@ -324,307 +220,86 @@ Known or expected fields:
 
 - order
 - product
-- unitPrice
+- orderPrice
 - count
 
-Current behavior includes:
+Current behavior appears to include:
 
 - Create order item when an order is created
-- Store ordered unit price at the time of order
 - Restore product stock when an order is cancelled
-- Calculate line total as `unitPrice * count`
 
-Important direction:
+Important future direction:
 
 - Add bidirectional convenience methods only if needed.
 - Avoid exposing entity graph directly in API responses.
 - Use DTOs for order item response.
 - Be careful with lazy loading and N+1 queries.
-- Keep total price calculation testable.
-
-### CartItem
-
-CartItem is now implemented as the current cart feature.
-
-Current behavior:
-
-- Users can add products to cart through `POST /cart/items`.
-- Users can view their cart through `GET /cart/items`.
-- Users can increase/decrease cart item count.
-- If count is 1 and decrease is requested, the cart item is deleted.
-- Users can delete cart items.
-- Cart item APIs use authenticated principal memberId, not request-provided memberId.
-- CartItem has `ManyToOne` relationships to Member and Product.
-- CartItem has a unique constraint on member/product so the same product for the same member is represented as one row.
-- Cart items are not stock reservations.
-- Product stock is decreased only when an order is created.
-
-Important backend rules:
-
-- Cart must not replace order validation.
-- Even if an item exists in the cart, stock and product status must be checked again when creating an order.
-- The authenticated user must own the cart item being modified or ordered.
-- Order success should delete the ordered cart items.
-- Order failure should not delete cart items because the transaction should roll back.
 
 ---
 
-## 6. Current Authentication and Authorization Model
+## 6. Current API Direction
 
-The project uses Spring Security session-based authentication as the main direction.
-
-### Current login model
-
-- Login endpoint accepts email/password.
-- Login uses Spring Security authentication components and session-backed security context.
-- Password verification should use `PasswordEncoder.matches(...)`.
-- Login response returns member-facing user information such as name, email, and role.
-- Logout clears the security context and invalidates the session/cookie as needed.
-
-### Current password model
-
-- Signup encodes the request password through `PasswordEncoder.encode(...)`.
-- BCrypt is used through `BCryptPasswordEncoder`.
-- Login compares the raw request password with the encoded stored password through the security/password encoder flow.
-- Plain-text password comparison should not be considered valid.
-
-### Current Spring Security filter configuration
-
-A `SecurityConfig` exists under:
-
-```text
-kr.co.prac.global.security.SecurityConfig
-```
-
-Current role:
-
-- Disable default form login because the project uses `POST /members/login`.
-- Disable HTTP Basic because the project does not use Basic Auth.
-- Disable Spring Security default logout because the project uses `POST /members/logout`.
-- Disable CSRF for the current REST API learning/testing stage.
-- Permit static resources, Swagger, signup, login, logout, and public product list.
-- Protect `/admin/**` as ADMIN-only.
-- Require authentication for other protected APIs.
-
-Important caveat:
-
-- Frontend role checks are only for UI display.
-- Backend Spring Security authorization must remain the source of truth.
-- Before production browser-session deployment, CSRF and cookie/session hardening should be revisited.
-
-### Current admin model
-
-Admin authorization is role-based.
-
-Current rule:
-
-```text
-Member.role == Role.ADMIN -> admin
-Member.role != Role.ADMIN -> not admin
-```
-
-Implementation direction:
-
-- Admin APIs are under `/admin/**`.
-- `/admin/**` should be protected by Spring Security role authorization.
-- Normal users should not access admin APIs even if they manually call the URL.
-
----
-
-## 7. Current Main API Surface
-
-### Member/User APIs
-
-```text
-POST   /members
-PUT    /members/me
-GET    /members/me
-GET    /members/me/orders
-DELETE /members/me
-```
-
-Removed or moved away from normal member controller:
+Current or expected API shape:
 
 ```text
 GET    /members
-GET    /members/{number}
-PUT    /members/{number}
-DELETE /members/{number}
+POST   /members
+GET    /members/{memberId}
+PUT    /members/{memberId}
+DELETE /members/{memberId}
+GET    /members/{memberId}/orders
+
+GET    /products
+
+GET    /orders
+GET    /orders/{orderId}
+POST   /orders
+DELETE /orders/{orderId}
 ```
 
-Reason:
+This API design is already moving in a REST-like direction.
 
-- These path-id based member APIs are admin-like or unsafe for normal users.
-- Normal users should act on themselves through `/members/me`.
-
-### Login APIs
+Recommended future API direction:
 
 ```text
-POST /members/login
-POST /members/logout
+POST   /auth/signup
+POST   /auth/login
+POST   /auth/logout
+GET    /me
+
+GET    /products
+GET    /products/{productId}
+POST   /admin/products
+PUT    /admin/products/{productId}
+DELETE /admin/products/{productId}
+
+POST   /orders
+GET    /orders
+GET    /orders/{orderId}
+POST   /orders/{orderId}/cancel
 ```
 
-### Order/User APIs
+For production-style APIs, prefer action endpoints only when the action is a domain command, such as order cancellation.
+
+Example:
 
 ```text
-GET  /orders/{orderId}
-POST /orders
-POST /orders/from-cart
 POST /orders/{orderId}/cancel
 ```
 
-Current meaning:
-
-- `GET /orders/{orderId}`: fetch one order detail, but only if it belongs to the logged-in member.
-- `POST /orders`: create a direct order for the logged-in member; request body does not include `memberId`.
-- `POST /orders/from-cart`: create an order from the logged-in member's cart items and delete cart items after successful order creation.
-- `POST /orders/{orderId}/cancel`: cancel an order, but only if it belongs to the logged-in member.
-
-### CartItem APIs
+is usually clearer than:
 
 ```text
-GET    /cart/items
-POST   /cart/items
-PATCH  /cart/items/{cartItemId}/increase
-PATCH  /cart/items/{cartItemId}/decrease
-DELETE /cart/items/{cartItemId}
+DELETE /orders/{orderId}
 ```
 
-Current meaning:
-
-- `GET /cart/items`: fetch current logged-in user's cart items.
-- `POST /cart/items`: add product to cart or increase existing cart item count.
-- `PATCH /cart/items/{cartItemId}/increase`: increase cart item count.
-- `PATCH /cart/items/{cartItemId}/decrease`: decrease cart item count or delete item when count is 1.
-- `DELETE /cart/items/{cartItemId}`: remove a cart item.
-
-### Product APIs
-
-Product browsing is public.
-
-```text
-GET /products
-```
-
-Current meaning:
-
-- `GET /products`: returns only `ACTIVE` products.
-
-### Admin Product APIs
-
-```text
-GET    /admin/products
-GET    /admin/products/{productNumber}
-POST   /admin/products
-PUT    /admin/products/{productNumber}
-DELETE /admin/products/{productNumber}
-PATCH  /admin/products/{productNumber}/hide
-PATCH  /admin/products/{productNumber}/show
-```
-
-Planned admin product image APIs:
-
-```text
-POST   /admin/products/{productNumber}/images
-GET    /admin/products/{productNumber}/images
-PATCH  /admin/products/{productNumber}/images/{imageId}/thumbnail
-PUT    /admin/products/{productNumber}/images/{imageId}
-DELETE /admin/products/{productNumber}/images/{imageId}
-```
-
-### Admin Member APIs
-
-```text
-GET    /admin/members
-GET    /admin/members/{number}
-DELETE /admin/members/{number}
-```
-
-### Admin Order APIs
-
-```text
-GET /admin/orders
-GET /admin/orders/{orderId}
-```
+because cancelling an order is not the same as deleting order history.
 
 ---
 
-## 8. Current Order Model and Pricing Decision
+## 7. Current Architecture
 
-The current order-item design uses unit price and count.
-
-Current intended meaning:
-
-```text
-OrderItem.unitPrice = product price at order creation time
-OrderItem.count = ordered quantity
-OrderItemResponse.totalPrice = unitPrice * count
-OrderDetailResponse.totalPrice = sum of each order item totalPrice
-```
-
-Important decision:
-
-- `OrderItem` should store the ordered unit price, not the line total.
-- This preserves the product price at the time of order.
-- Later changes to `Product.price` should not retroactively change old order totals.
-
-Current response structure intent:
-
-```json
-{
-  "number": 1,
-  "memberId": 1,
-  "orderDate": "...",
-  "status": "READY",
-  "orderItems": [
-    {
-      "number": 10,
-      "productName": "Keyboard",
-      "unitPrice": 30000,
-      "count": 2,
-      "totalPrice": 60000
-    }
-  ],
-  "totalPrice": 60000
-}
-```
-
----
-
-## 9. Current Exception Model
-
-Important `ErrorCode` values include:
-
-```text
-LOGIN_REQUIRED              -> 401 Unauthorized
-NOT_AUTHORIZED_CANCEL       -> 403 Forbidden
-NOT_AUTHORIZED_MEMBER       -> 403 Forbidden
-NOT_AUTHORIZED_ADMIN        -> 403 Forbidden
-MEMBER_NOT_FOUND            -> 404 Not Found
-ALREADY_EXIST_MEMBER        -> 409 Conflict
-ORDER_NOT_FOUND             -> 404 Not Found
-PRODUCT_NOT_FOUND           -> 404 Not Found
-CARTITEM_NOT_FOUND          -> 404 Not Found
-EMPTY_ITEM_ORDER            -> 400 Bad Request
-EMPTY_CART_ITEM             -> 400 Bad Request
-ALREADY_CANCELLED_ORDER     -> 400 Bad Request
-NOT_ENOUGH_STOCK            -> 400 Bad Request
-INVALID_INPUT_VALUE         -> 400 Bad Request
-INVALID_PASSWORD            -> 401 Unauthorized
-INTERNAL_SERVER_ERROR       -> 500 Internal Server Error
-```
-
-Current role/authorization caveat:
-
-- `Member.role` exists and `MemberResponse` exposes `role`.
-- Admin authorization is role-based.
-- Spring Security should remain the final backend authorization layer.
-
----
-
-## 10. Current Architecture
-
-Current architecture follows layered architecture:
+Current architecture appears to follow layered architecture:
 
 ```text
 Controller
@@ -636,234 +311,450 @@ Repository
 Entity / Database
 ```
 
-Current package direction includes:
+Current package direction appears to include:
 
 ```text
 kr.co.prac
-├── admin
-│   ├── controller
-│   ├── exception
-│   └── service
-├── cartitem
-│   ├── controller
-│   ├── dto
-│   ├── entity
-│   ├── exception
-│   ├── repository
-│   └── service
+├── controller
+├── dto
+├── entity
+├── repository
+├── service
+└── resources
+```
+
+Recommended future package structure:
+
+```text
+kr.co.prac
 ├── global
-│   ├── config
-│   ├── entity
 │   ├── exception
-│   └── security
-├── login
-│   ├── controller
-│   ├── dto
-│   ├── exception
-│   └── service
+│   ├── response
+│   └── config
 ├── member
 │   ├── controller
-│   ├── dto
-│   ├── entity
-│   ├── exception
+│   ├── service
 │   ├── repository
-│   └── service
-├── orders
-│   ├── controller
-│   ├── dto
 │   ├── entity
-│   ├── exception
-│   ├── repository
-│   └── service
+│   └── dto
 ├── product
 │   ├── controller
-│   ├── dto
-│   ├── entity
-│   ├── exception
+│   ├── service
 │   ├── repository
-│   └── service
+│   ├── entity
+│   └── dto
+├── order
+│   ├── controller
+│   ├── service
+│   ├── repository
+│   ├── entity
+│   └── dto
 └── PracApplication.java
 ```
 
 Recommendation:
 
-- Feature-based packages are preferred as the project grows.
-- `global.config` is suitable for general configuration.
-- `global.security` is suitable for security-specific configuration.
-- Product image code can start under the `product` domain because it is tightly coupled to product management.
+As the project grows, feature-based packages are likely cleaner than layer-only packages.
 
----
-
-## 11. Current Known Limitations
-
-### Authentication/security
-
-- CSRF is disabled for the current learning/testing stage.
-- Cookie/session production hardening is not yet completed.
-- Redis Session is not yet introduced.
-- JWT is not yet introduced.
-- Security integration tests should be added.
-
-### API design
-
-- Some return values may still use plain strings such as `"성공"`.
-- A consistent success response format has not been fully standardized.
-- Pagination has not been added to list APIs.
-- Product image APIs are not yet implemented.
-- Product list/detail response design should be revisited after ProductImage is added.
-
-### Code quality
-
-- Some controllers may still use wildcard imports depending on IDE behavior. This is accepted for now and should not be treated as a blocker.
-- Minor formatting issues are not a priority unless they affect readability or correctness.
-- Some DTO validation can be strengthened, such as adding `@NotNull` to required `Integer` fields.
-- Direct order and cart order share similar order creation behavior; current light refactoring is acceptable, but deeper refactoring can be considered later.
-- `ProductStatus.ACTIVE` validation currently throws `ProductNotFoundException`; a more precise `NotAvailableProductException` can be introduced later.
-
-### Testing
-
-- Testing is ongoing and should remain incremental.
-- The user has limited prior experience writing test code.
-- Tests should include domain unit tests, service unit tests with Mockito, repository tests with `@DataJpaTest`, and controller/security integration tests with MockMvc.
-- OrderService tests have been restored after accidental deletion.
-- `orderFromCart`-specific tests should be added.
-
-### Frontend/backend boundary
-
-- Frontend is a UI layer for API demonstration and browser testing.
-- Frontend must not hide, patch, or compensate for backend defects.
-- Frontend role checks are display-only.
-- Backend remains responsible for authentication, authorization, validation, stock changes, order ownership, product status transitions, and persistence.
-
----
-
-## 12. Recommended Next Steps
-
-Current recommended next steps:
-
-1. Commit the current cart/order-from-cart/refactoring progress.
-2. Start ProductImage entity implementation.
-3. Add `ProductImageRepository`.
-4. Add ProductImage request/response DTOs.
-5. Add admin ProductImage service and controller APIs.
-6. Update product list/detail responses to include representative image and/or image list.
-7. Add focused tests for ProductImage behavior.
-8. Later, add file upload that stores generated URLs into `ProductImage.imageUrl`.
-
-ProductImage implementation order:
+For example:
 
 ```text
-1. ProductImage entity
-2. ProductImageRepository
-3. ProductImageRequest / ProductImageResponse
-4. AdminProductImageService
-5. AdminProductImageController
-6. Product response DTO integration
-7. Manual API testing
-8. Service/repository tests
+member/controller
+member/service
+member/repository
+member/dto
+```
+
+is usually easier to maintain than:
+
+```text
+controller/membercontroller
+service/memberservice
+dto/member
 ```
 
 ---
 
-## 13. ProductImage Design Decision
+## 8. Current Code Review Priorities
 
-The project should not add only `Product.imageUrl` because the requirements include both single representative image and multiple product images.
+When reviewing this project, classify feedback into three levels.
 
-Chosen model:
+### Critical
+
+Issues that may cause runtime errors, wrong data, security problems, or production failure.
+
+Examples:
+
+- Hardcoded database credentials
+- Missing transaction boundary
+- Incorrect stock handling
+- Exposing sensitive user data
+- Unsafe authentication logic
+- Incorrect JPA relationship mapping
+- Data loss caused by `ddl-auto=create`
+- Missing validation for important requests
+
+### Important
+
+Issues that affect maintainability, scalability, or backend conventions.
+
+Examples:
+
+- Package naming convention
+- Entity exposed directly to API
+- Missing global exception handler
+- Inconsistent API response format
+- Service methods doing too many things
+- No pagination for list APIs
+- Possible N+1 query problem
+- Weak test coverage
+- Using `DELETE` for order cancellation
+
+### Optional
+
+Issues that are useful but not urgent.
+
+Examples:
+
+- More detailed Swagger documentation
+- Custom response wrapper
+- More expressive method names
+- Better frontend UI
+- Dockerization
+- CI/CD
+- QueryDSL
+- Monitoring
+
+---
+
+## 9. Immediate Refactoring Recommendations
+
+Before adding many new features, prioritize these improvements.
+
+### 1. Separate environment configuration
+
+Current local database settings should not be treated as production settings.
+
+Recommended files:
 
 ```text
-Product 1 : N ProductImage
+application.yml
+application-local.yml
+application-test.yml
+application-prod.yml
 ```
 
-Planned `ProductImage` fields:
+Local example:
 
-```text
-number
-product
-imageUrl
-thumbnail or representative flag
-sortOrder
-createdAt / updatedAt through BaseTimeEntity
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/prac?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 ```
 
-Rules:
+### 2. Stop relying on `ddl-auto=create` for long-term development
 
-- A product can have zero, one, or many images.
-- If there is only one image, it can be marked as representative.
-- If there are many images, at most one should be marked as representative.
-- The representative image should be used in product list responses.
-- Product detail responses can include all images ordered by `sortOrder`.
-- When a new image is marked as representative, existing representative images for the same product should be unmarked.
-- File upload is not the first step. The first step is storing image URLs.
+Use `create` only while learning or resetting local data.
 
-Later upload flow:
+Later direction:
+
+```yaml
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+```
+
+Then use Flyway or Liquibase for schema migration.
+
+### 3. Add global exception handling
+
+Create a consistent error response instead of returning raw exceptions.
+
+Recommended classes:
 
 ```text
-MultipartFile upload
--> store file locally or in object storage
--> generate public/access URL
--> save URL into ProductImage.imageUrl
+global/exception/GlobalExceptionHandler.java
+global/exception/ErrorResponse.java
+```
+
+### 4. Standardize API responses
+
+At minimum, decide whether APIs return:
+
+```json
+{
+  "data": {},
+  "message": "success"
+}
+```
+
+or return raw DTOs directly.
+
+For a beginner project, raw DTOs are acceptable. For portfolio/production direction, a consistent response format is better.
+
+### 5. Improve package naming
+
+Java package names should be lowercase.
+
+Prefer:
+
+```text
+product/service
+member/service
+order/service
+```
+
+Avoid mixed-case package names such as:
+
+```text
+productService
+memberService
+orderService
+```
+
+### 6. Replace order deletion with order cancellation command
+
+Business-wise, cancelling an order should preserve order history.
+
+Recommended endpoint:
+
+```text
+POST /orders/{orderId}/cancel
+```
+
+Service method:
+
+```java
+@Transactional
+public OrderResponse cancelOrder(Long orderId) {
+    Orders order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+    order.cancel();
+
+    return OrderResponse.from(order);
+}
 ```
 
 ---
 
-## 14. Recommended Authentication Roadmap
+## 10. Recommended Next Feature: Login
 
-Recommended order:
+The user is considering login as the next feature. This is a good direction, but it should be added in stages.
 
-```text
-1. Spring Security session login
-2. Spring Security role-based authorization
-3. Security/controller integration tests
-4. Spring Session + Redis
-5. JWT comparison later
-```
+### Login Stage 1: Member signup
 
-Current status:
+Add:
 
 ```text
-Step 1: implemented or in active use
-Step 2: implemented for admin direction and should be verified with tests
-Step 3: selected as part of the testing phase
-Step 4: later
-Step 5: later
+POST /auth/signup
 ```
+
+Concepts:
+
+- Signup request DTO
+- Password encoding
+- Duplicate email validation
+- Member role
+- Validation
+
+Required dependency:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+### Login Stage 2: Session-based login
+
+Start with session login before JWT if the user is still learning Spring Security.
+
+Why:
+
+- Easier to understand
+- Closer to traditional web login
+- Good for learning authentication flow
+- Less token complexity
+
+### Login Stage 3: Authorization
+
+Add roles:
+
+```java
+public enum Role {
+    USER,
+    ADMIN
+}
+```
+
+Example rule:
+
+- Normal users can create and view their own orders.
+- Admin users can create/update/delete products.
+- Admin users can view all orders.
+
+### Login Stage 4: JWT
+
+Add JWT only after basic Spring Security flow is understood.
+
+JWT is useful for stateless REST APIs and frontend/backend separation, but it adds more complexity.
 
 ---
 
-## 15. Testing Roadmap
+## 11. Recommended Feature Roadmap
 
-Testing should continue incrementally.
+### Phase 0: Stabilization
+
+Goal: Make the existing project cleaner before adding large features.
+
+Tasks:
+
+- Clean package structure
+- Add global exception handling
+- Add error response DTO
+- Clean application profiles
+- Remove hardcoded DB password
+- Remove duplicated dependencies
+- Add README
+- Add this `PROJECT_CONTEXT.md`
+
+### Phase 1: Member and Authentication
+
+Goal: Turn `Member` into a real user account.
+
+Tasks:
+
+- Add password field
+- Add password encoder
+- Add signup
+- Add login
+- Add logout
+- Add role
+- Add current user API: `GET /me`
+
+### Phase 2: Product Management
+
+Goal: Make product management realistic.
+
+Tasks:
+
+- Product create/update/delete APIs
+- Product detail API
+- Product search
+- Product pagination
+- Product category
+- Admin-only product management
+
+### Phase 3: Order Flow
+
+Goal: Make orders closer to a real service.
+
+Tasks:
+
+- Create order from multiple order items
+- Validate stock
+- Calculate total price
+- Cancel order
+- Restore stock on cancellation
+- Prevent duplicate cancellation
+- View my orders
+- View order detail with order items
+
+### Phase 4: Cart
+
+Goal: Add a common e-commerce feature.
+
+Tasks:
+
+- Add cart
+- Add cart item
+- Add product to cart
+- Change cart item quantity
+- Remove cart item
+- Create order from cart
+
+### Phase 5: Payment Simulation
+
+Goal: Practice real-world business flow without real payment integration first.
+
+Tasks:
+
+- Payment status
+- Mock payment API
+- Payment success/failure
+- Order status transition after payment
+- Payment cancellation
+
+### Phase 6: Production Readiness
+
+Goal: Make the project deployable.
+
+Tasks:
+
+- Docker
+- MySQL container
+- Spring profiles
+- Environment variables
+- GitHub Actions
+- Cloud deployment
+- Nginx reverse proxy
+- HTTPS
+- Logging
+- Monitoring
+
+---
+
+## 12. Testing Roadmap
+
+Current project already contains some member-related tests.
+
+Recommended next tests:
+
+### Service tests
+
+- Member signup success
+- Duplicate email failure
+- Product stock decrease
+- Product stock shortage failure
+- Order creation success
+- Order cancellation success
+- Duplicate cancellation failure
+
+### Repository tests
+
+- Find member by email
+- Find orders by member
+- Find order items by order
+
+### Controller tests
+
+- Member API validation
+- Order creation validation
+- Product list API
+- Error response format
+
+### Integration tests
+
+- Full order creation flow
+- Full order cancellation flow
+- Signup/login/order flow after authentication is added
 
 Recommended tools:
 
 - JUnit 5
 - AssertJ
-- Mockito
 - Spring Boot Test
 - MockMvc
-- `@DataJpaTest`
 - Testcontainers later
-
-Recommended near-term test targets:
-
-- `OrderService.orderFromCart` success
-- `OrderService.orderFromCart` empty cart failure
-- inactive product cannot be ordered through direct order
-- inactive product cannot be ordered through cart order
-- cart items are deleted after successful order-from-cart
-- ProductImage repository lookup by product
-- ProductImage representative image logic
-
-Important rule:
-
-- Do not mock the repository when testing the repository itself.
-- Use Mockito for service tests with dependencies.
-- Use `@DataJpaTest` for repository tests.
 
 ---
 
-## 16. JPA Learning Priorities
+## 13. JPA Learning Priorities
 
 For this project, the most important JPA concepts are:
 
@@ -880,23 +771,19 @@ For this project, the most important JPA concepts are:
 11. Fetch join
 12. JPQL
 13. QueryDSL
-14. Repository testing with `@DataJpaTest`
 
 The assistant should explain JPA concepts using this project's domain whenever possible.
 
-Examples:
+Example:
 
 - Member has many orders.
 - Order has many order items.
 - Order item references product.
 - Product stock changes through domain methods.
-- Cart item references member and product.
-- Product will have many product images.
-- ProductImage will be the owning side of the Product/ProductImage relationship.
 
 ---
 
-## 17. Production-Minded Standards
+## 14. Production-Minded Standards
 
 As this project moves toward a commercializable web service, apply these standards gradually.
 
@@ -905,11 +792,8 @@ As this project moves toward a commercializable web service, apply these standar
 - Do not store raw passwords.
 - Do not expose internal entity fields.
 - Do not trust client-provided user ID after login.
-- Use authenticated principal/security context for user-specific operations.
+- Use authenticated principal for user-specific operations.
 - Separate user and admin permissions.
-- Keep backend as the source of truth for authorization.
-- Add a real CSRF strategy before browser-based production session login.
-- Harden cookies/session settings before deployment.
 
 ### Database
 
@@ -918,8 +802,6 @@ As this project moves toward a commercializable web service, apply these standar
 - Add indexes where needed.
 - Use unique constraints for email.
 - Think about transaction isolation for stock changes.
-- ProductImage may need an index on `product_id` and possibly `(product_id, sort_order)`.
-- Representative product image uniqueness should be enforced by service logic initially; database-level constraints can be considered later.
 
 ### API
 
@@ -929,9 +811,6 @@ As this project moves toward a commercializable web service, apply these standar
 - Add error response body.
 - Add Swagger documentation.
 - Add pagination for list APIs.
-- Keep response DTOs stable for frontend use.
-- Product list response should eventually expose representative image URL.
-- Product detail response should eventually expose image list.
 
 ### Code
 
@@ -942,55 +821,27 @@ As this project moves toward a commercializable web service, apply these standar
 - Keep package names consistent.
 - Use clear method names.
 - Add tests when fixing bugs or adding features.
-- Avoid frontend workarounds for backend defects.
-
-### Testing
-
-- Add tests before or during large new features where possible.
-- Use pure domain unit tests for entity/domain rules.
-- Use Mockito for service unit tests with dependencies.
-- Use `@DataJpaTest` for repository tests.
-- Use MockMvc/Spring integration tests for API and security behavior.
-- Test both success paths and failure paths.
-- Treat authorization tests as critical.
 
 ---
 
-## 18. Recommended Commit Messages by Future Step
+## 15. Assistant Instructions for Future Conversations
 
-Current cart/order/refactor documentation commit:
+When the user asks about this project:
 
-```bash
-git commit -m "docs: update project context and log"
-```
-
-ProductImage entity:
-
-```bash
-git commit -m "feat: add product image entity"
-```
-
-ProductImage API:
-
-```bash
-git commit -m "feat: add product image management APIs"
-```
-
-Product response update:
-
-```bash
-git commit -m "feat: include product images in responses"
-```
-
-Tests:
-
-```bash
-git commit -m "test: add cart and product image tests"
-```
+1. Assume the user is working on `jpa-prac`.
+2. Answer in Korean.
+3. Provide Java/Spring code when useful.
+4. Connect explanations to the current product/member/order domain.
+5. Review code with production-readiness and portfolio-readiness in mind.
+6. Separate beginner-friendly explanation from best-practice recommendation.
+7. Recommend incremental changes instead of large rewrites.
+8. If reviewing code, classify issues as Critical, Important, or Optional.
+9. Suggest the next best feature or refactoring step when relevant.
+10. Treat login/authentication as a likely next major feature.
 
 ---
 
-## 19. What To Ask or Check Later
+## 16. What To Ask or Check Later
 
 When more precision is needed, check or ask for:
 
@@ -1002,33 +853,432 @@ When more precision is needed, check or ask for:
 - Current test files
 - Current API behavior
 - Current database schema
-- Current security configuration
-- Current static frontend files
-- Whether product image representative field should be named `thumbnail`, `representative`, or `main`
-- Whether product image ordering should start at 0 or 1
-- Whether image URLs should be nullable or required
-- Whether product image deletion should hard delete or soft delete
-- Whether file upload will use local storage, S3, NCP Object Storage, or another storage service
+- Whether the project uses sessions or JWT
+- Whether the project has a frontend direction
+- Whether the project will be deployed to AWS, NCP, or another platform
+
+This document gives long-term context, but exact code review should still be based on the current source code.
+
+---
+---
+
+## 17. Current Confirmed Implementation State
+
+This section records the latest confirmed state after the product image thumbnail flow was implemented and manually tested.
+
+Confirmed implemented domains now include:
+
+- Member
+- Product
+- ProductImage
+- Orders
+- OrderItem
+- CartItem
+- Login/session authentication
+- Admin product management
+- Admin product image management
+- Cart ordering
+- Direct ordering
+
+Confirmed implemented or manually tested behavior:
+
+- Spring Security session login is used.
+- User-specific APIs use the authenticated principal instead of trusting request-provided member IDs.
+- Admin APIs are protected under `/admin/**`.
+- Product status supports:
+  - `ACTIVE`
+  - `HIDDEN`
+  - `DELETED`
+- Public product listing should expose only `ACTIVE` products.
+- Admin product management can view and manage all product statuses.
+- Cart item creation and quantity changes use the authenticated user.
+- Adding to cart does not reduce stock.
+- Ordering reduces stock.
+- Ordering from cart deletes cart items after successful order creation.
+- Order creation validates product status and stock.
+- Product images are managed through a separate `ProductImage` entity.
+- Product can have zero, one, or many images.
+- Product image metadata includes:
+  - product
+  - imageUrl
+  - thumbnail
+  - sortOrder
+- One image can be selected as the representative thumbnail.
+- Cart response includes the product thumbnail URL.
+- Direct order response includes the product thumbnail URL.
+- Order-from-cart response includes the product thumbnail URL.
+- Order detail response includes the product thumbnail URL.
+
+Manual test flow completed:
+
+```text
+Admin login
+-> product creation
+-> product image registration by URL
+-> multiple product image registration
+-> thumbnail switching
+-> user login
+-> add product to cart
+-> GET /cart/items thumbnail response check
+-> POST /orders/from-cart thumbnail response check
+-> cart cleared check
+-> GET /orders/{orderId} thumbnail response check
+-> POST /orders direct order thumbnail response check
+-> thumbnail deletion/fallback check
+```
+
+Important debugging decisions from this phase:
+
+- `OrderItemRepository` must import JPA `@Query`, not JDBC `@Query`.
+- JPQL must use entity field names, not DTO response field names.
+- `ProductImage.imageUrl` is the stored image path/URL field.
+- `ProductImage.thumbnail` is the boolean field used to identify the representative image.
+- JPQL `select new ...` DTO projection requires a matching DTO constructor.
+- `ProductImageResponse` should expose enough admin-management data:
+  - image number
+  - product number
+  - imageUrl
+  - thumbnail
+  - sortOrder
 
 ---
 
-## 20. Assistant Guidance for Future Conversations
+## 18. Product Image Support Current State
 
-When continuing this project:
+The current product image implementation is URL-based.
 
-- Speak Korean unless the user asks otherwise.
-- Review diffs directly and say whether they are commit-ready.
-- Prioritize correctness and learning over over-engineering.
-- Do not recommend JWT before the session/Spring Security basics are clear.
-- Current recommended direction is: finish current cart/order progress, then ProductImage entity, then ProductImage APIs, then frontend image display.
-- For testing, explain the test purpose, setup, action, assertion, and test type.
-- Do not add frontend logic that compensates for backend defects.
-- Do not focus on whitespace-only issues unless requested.
-- Do not flag wildcard imports as an issue unless they cause problems.
-- For API design, separate normal-user behavior from admin behavior.
-- For authorization, backend Spring Security must remain the source of truth.
-- For GitHub checks, verify current repo state before generating new docs.
-- Use exact filenames:
-  - `PROJECT_CONTEXT.md`
-  - `PROJECT_LOG.md`
-- Do not add `_updated` to generated file names.
+Current admin API direction:
+
+```text
+GET    /admin/products/{productNumber}/images
+POST   /admin/products/{productNumber}/images
+PUT    /admin/products/{productNumber}/images/{productImageNumber}
+PATCH  /admin/products/{productNumber}/images/{productImageNumber}/thumbnail
+DELETE /admin/products/{productNumber}/images/{productImageNumber}
+```
+
+Current request style:
+
+```json
+{
+  "imageUrl": "https://example.com/product-image.jpg"
+}
+```
+
+Current design decision:
+
+- Do not add a single `Product.imageUrl` as the primary image design.
+- Keep product images in the separate `ProductImage` entity.
+- Continue storing the final accessible URL/path in `ProductImage.imageUrl`.
+- The next step should not discard the current `ProductImage` structure.
+- File upload should produce an accessible image URL/path and then save that value into `ProductImage.imageUrl`.
+
+Important product image rules:
+
+- A product may have no images.
+- If a product has no image, response thumbnail URL may be `null`.
+- The frontend should handle `null` thumbnail URL with a placeholder image.
+- A product may have multiple images.
+- Exactly one image should be thumbnail when images exist.
+- The first uploaded/registered image should become thumbnail automatically.
+- Changing thumbnail should unmark previous thumbnail images.
+- Deleting the current thumbnail should promote another remaining image, preferably the lowest `sortOrder`.
+- `sortOrder` should remain product-scoped, not globally unique.
+
+---
+
+## 19. Next Feature: Admin Product Image File Upload
+
+The next major implementation task is product image file upload.
+
+Reason:
+
+The current admin product image feature only accepts an external image URL. For a more realistic admin product-management flow, the admin should be able to upload and manage actual image files.
+
+This is now higher priority than test-code writing.
+
+Target direction:
+
+```text
+Admin uploads image file
+-> backend validates file
+-> backend stores file
+-> backend creates an accessible URL/path
+-> backend saves that URL/path into ProductImage.imageUrl
+-> existing ProductImage thumbnail/sortOrder logic continues to work
+```
+
+Recommended first implementation stage:
+
+Use local file storage before cloud storage.
+
+Reason:
+
+- Simpler to understand.
+- Easier to debug.
+- Good learning step before S3/NCP Object Storage.
+- Keeps storage concerns visible.
+- Can later be replaced behind a `StorageService` abstraction.
+
+Recommended local upload API:
+
+```text
+POST /admin/products/{productNumber}/images/upload
+Content-Type: multipart/form-data
+file=<image file>
+```
+
+Recommended behavior:
+
+- Accept `MultipartFile`.
+- Reject empty file.
+- Validate image content type.
+- Optionally validate file size.
+- Generate a unique stored filename.
+- Store the file under a local upload directory.
+- Expose uploaded files through a static resource mapping such as `/uploads/**`.
+- Save the generated URL/path to `ProductImage.imageUrl`.
+- Reuse existing thumbnail and sortOrder logic.
+
+Recommended package direction:
+
+```text
+kr.co.prac.global.storage
+├── StorageService.java
+├── LocalStorageService.java
+└── StorageProperties.java
+```
+
+Recommended service contract:
+
+```java
+public interface StorageService {
+    String store(MultipartFile file);
+    void delete(String storedUrlOrPath);
+}
+```
+
+Recommended controller shape:
+
+```java
+@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ProductImageResponse uploadProductImage(
+        @PathVariable Long productNumber,
+        @RequestPart MultipartFile file
+) {
+    return productImageService.uploadProductImage(productNumber, file);
+}
+```
+
+Recommended service flow:
+
+```text
+ProductImageService.uploadProductImage(productNumber, file)
+1. Validate product exists.
+2. Store file through StorageService.
+3. Convert stored file path to accessible URL/path.
+4. Create ProductImage with imageUrl.
+5. Apply first-image thumbnail rule.
+6. Return ProductImageResponse.
+```
+
+Important design decision:
+
+Keep the existing URL registration API temporarily.
+
+Reason:
+
+- It remains useful for quick manual testing.
+- It helps compare URL-based and file-based flows.
+- It avoids breaking existing tested behavior.
+- It can be deprecated or removed later after file upload is stable.
+
+Recommended API coexistence:
+
+```text
+POST /admin/products/{productNumber}/images
+- JSON body with imageUrl
+- Keep for now
+
+POST /admin/products/{productNumber}/images/upload
+- multipart/form-data file upload
+- Add next
+```
+
+Do not jump directly to S3 or cloud storage yet.
+
+Cloud storage should come after:
+
+- local upload works
+- uploaded files can be served
+- ProductImage is saved correctly
+- thumbnail switching still works
+- deletion policy is decided
+- local code is hidden behind StorageService
+
+---
+
+## 20. File Upload Implementation Checklist
+
+Implement file upload in this order.
+
+### Step 1: Configuration
+
+Add upload configuration.
+
+Example properties:
+
+```yaml
+app:
+  upload:
+    dir: uploads
+    url-prefix: /uploads
+```
+
+### Step 2: Static Resource Mapping
+
+Expose uploaded files through Spring MVC resource handling.
+
+Expected behavior:
+
+```text
+Saved local file:
+uploads/product-images/uuid-image.jpg
+
+Accessible URL:
+http://localhost:8080/uploads/product-images/uuid-image.jpg
+```
+
+### Step 3: Storage Service
+
+Add a storage abstraction.
+
+Recommended responsibilities:
+
+- validate file is not empty
+- validate image file type
+- generate unique filename
+- create directories if missing
+- save file to disk
+- return accessible URL/path
+
+### Step 4: ProductImage Service Upload Method
+
+Add a new service method:
+
+```java
+ProductImageResponse uploadProductImage(Long productNumber, MultipartFile file);
+```
+
+This method should reuse existing image creation rules.
+
+### Step 5: Admin Upload Endpoint
+
+Add endpoint:
+
+```text
+POST /admin/products/{productNumber}/images/upload
+```
+
+Request type:
+
+```text
+multipart/form-data
+```
+
+Field name:
+
+```text
+file
+```
+
+### Step 6: Manual Test
+
+Manual test flow:
+
+```text
+Admin login
+-> create product
+-> upload image file
+-> GET /admin/products/{productNumber}/images
+-> confirm imageUrl points to uploaded file
+-> open imageUrl in browser
+-> change thumbnail
+-> user login
+-> add product to cart
+-> GET /cart/items thumbnail check
+-> POST /orders/from-cart thumbnail check
+-> GET /orders/{orderId} thumbnail check
+```
+
+### Step 7: Cleanup Policy
+
+Decide deletion behavior.
+
+Recommended first rule:
+
+- When deleting `ProductImage`, delete DB row first.
+- Also try to delete the local file if the image belongs to local upload storage.
+- If physical file deletion fails, log it and do not fail the whole business operation yet.
+
+Potential later improvement:
+
+- Store original filename, stored filename, file size, and content type separately.
+- Add a `ProductImageFile` value object or additional fields.
+- Use cloud object storage and signed URLs if needed.
+
+---
+
+## 21. Testing Roadmap Update
+
+Testing is still important, but it should come after the immediate file upload feature is implemented and manually verified.
+
+Updated test priority:
+
+1. Implement local file upload.
+2. Manually verify uploaded product image flow.
+3. Add focused tests around the finished file-upload behavior.
+4. Then expand into broader service/repository/controller/security tests.
+
+Recommended file-upload-related tests after implementation:
+
+- Storage service rejects empty files.
+- Storage service rejects non-image files.
+- Storage service stores image file and returns accessible path.
+- Product image upload creates `ProductImage`.
+- First uploaded image becomes thumbnail.
+- Second uploaded image is not thumbnail.
+- Thumbnail switching still works after upload.
+- Deleting image removes or attempts to remove stored local file.
+- Cart response uses uploaded image URL.
+- Order detail response uses uploaded image URL.
+
+---
+
+## 22. Current Best Next Step
+
+Recommended immediate next step:
+
+Design and implement admin product image file upload.
+
+Priority order:
+
+1. Decide local upload directory and URL prefix.
+2. Add `StorageService` and `LocalStorageService`.
+3. Add static resource mapping for `/uploads/**`.
+4. Add `ProductImageService.uploadProductImage(...)`.
+5. Add admin multipart endpoint:
+   - `POST /admin/products/{productNumber}/images/upload`
+6. Manually test uploaded file access in browser.
+7. Verify uploaded file thumbnail appears in:
+   - admin image list
+   - cart response
+   - direct order response
+   - order-from-cart response
+   - order detail response
+8. Only after this flow works, write focused tests.
+
+Do not replace the existing URL-based image registration immediately.
+
+Do not start broad test-code work before file upload is working, because the current next product-management gap is actual file handling by the admin.
+
